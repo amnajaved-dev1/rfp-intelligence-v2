@@ -1,0 +1,21 @@
+{
+  "name": "rfp-intelligence-backend",
+  "version": "2.0.0",
+  "description": "SPS RFP Intelligence Portal Backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^16.3.1",
+    "express": "^4.22.2",
+    "express-rate-limit": "^8.5.2",
+    "multer": "^2.2.0",
+    "pdf-parse": "^1.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

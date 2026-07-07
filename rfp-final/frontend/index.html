@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RFP Intelligence Portal</title>
+<style>
+  :root{
+    --bg: #0c0e14;
+    --panel: #12151e;
+    --panel-border: #232838;
+    --ink: #e8eaf0;
+    --muted: #8b92a6;
+    --accent: #5b8cff;
+    --accent-dim: #3a4a73;
+    --go: #3ddc97;
+    --caution: #f5b942;
+    --nogo: #ff6b6b;
+    --mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    min-height:100vh;
+    line-height:1.5;
+  }
+  .app{display:flex;flex-direction:column;min-height:100vh;}
+
+  /* ---------- header ---------- */
+  header{
+    border-bottom:1px solid var(--panel-border);
+    padding:18px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:linear-gradient(180deg, rgba(91,140,255,0.06), transparent);
+  }
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-mark{
+    width:36px;height:36px;border-radius:9px;
+    background:linear-gradient(135deg,#5b8cff,#3ddc97);
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;flex-shrink:0;
+  }
+  .brand-text h1{font-size:16px;font-weight:600;letter-spacing:0.2px;}
+  .brand-text p{font-size:11.5px;color:var(--muted);font-family:var(--mono);letter-spacing:0.3px;}
+  .engine-badge{
+    font-family:var(--mono);font-size:11px;color:var(--muted);
+    border:1px solid var(--panel-border);border-radius:20px;
+    padding:5px 12px;
+  }
+
+  /* ---------- layout ---------- */
+  main{flex:1;display:grid;grid-template-columns:380px 1fr;min-height:0;}
+  @media (max-width: 900px){ main{grid-template-columns:1fr;} }
+
+  .panel-left{
+    border-right:1px solid var(--panel-border);
+    padding:28px;
+    overflow-y:auto;
+  }
+  .panel-right{
+    padding:28px 36px;
+    overflow-y:auto;
+  }
+
+  .section-label{
+    font-family:var(--mono);font-size:11px;letter-spacing:1.2px;
+    color:var(--accent);text-transform:uppercase;margin-bottom:10px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .section-label .num{
+    color:var(--muted);
+  }
+
+  /* ---------- upload box ---------- */
+  .dropzone{
+    border:1.5px dashed var(--panel-border);
+    border-radius:10px;
+    padding:28px 16px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color .15s, background .15s;
+    margin-bottom:14px;
+  }
+  .dropzone:hover, .dropzone.drag{
+    border-color:var(--accent);
+    background:rgba(91,140,255,0.05);
+  }
+  .dropzone .icon{font-size:26px;margin-bottom:8px;}
+  .dropzone .main-txt{font-size:13.5px;font-weight:500;}
+  .dropzone .sub-txt{font-size:11.5px;color:var(--muted);margin-top:4px;}
+
+  .file-chip{
+    display:flex;align-items:center;gap:10px;
+    background:var(--panel);border:1px solid var(--panel-border);
+    border-radius:8px;padding:10px 12px;margin-bottom:14px;
+  }
+  .file-chip .ficon{font-size:16px;}
+  .file-chip .finfo{flex:1;min-width:0;}
+  .file-chip .fname{font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .file-chip .fsize{font-size:10.5px;color:var(--muted);font-family:var(--mono);}
+  .file-chip .fremove{
+    background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;
+    padding:2px 6px;border-radius:4px;
+  }
+  .file-chip .fremove:hover{color:var(--nogo);background:rgba(255,107,107,0.1);}
+
+  textarea.context{
+    width:100%;background:var(--panel);border:1px solid var(--panel-border);
+    border-radius:8px;color:var(--ink);font-family:var(--sans);font-size:12.5px;
+    padding:10px 12px;resize:vertical;min-height:64px;margin-bottom:14px;
+  }
+  textarea.context:focus{outline:none;border-color:var(--accent);}
+  textarea.context::placeholder{color:var(--muted);}
+
+  label.field-label{
+    font-size:11.5px;color:var(--muted);display:block;margin-bottom:6px;font-weight:500;
+  }
+
+  button.primary{
+    width:100%;background:var(--accent);color:#fff;border:none;
+    border-radius:8px;padding:13px;font-size:13.5px;font-weight:600;
+    cursor:pointer;transition:background .15s, transform .08s;
+    font-family:var(--sans);
+  }
+  button.primary:hover:not(:disabled){background:#4a78e0;}
+  button.primary:active:not(:disabled){transform:scale(0.99);}
+  button.primary:disabled{background:var(--accent-dim);cursor:not-allowed;color:rgba(255,255,255,0.5);}
+
+  .error-box{
+    margin-top:14px;background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.35);
+    border-radius:8px;padding:12px 14px;font-size:12px;color:#ffb3b3;line-height:1.5;
+  }
+  .error-box .etitle{font-weight:600;color:var(--nogo);margin-bottom:4px;}
+
+  /* ---------- empty state ---------- */
+  .empty-state{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;color:var(--muted);min-height:420px;gap:12px;
+  }
+  .empty-state .glyph{font-size:34px;opacity:0.5;}
+  .empty-state h2{font-size:16px;color:var(--ink);font-weight:600;}
+  .empty-state p{font-size:13px;max-width:340px;}
+
+  .loading-state{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:420px;gap:16px;
+  }
+  .spinner{
+    width:34px;height:34px;border-radius:50%;
+    border:3px solid var(--panel-border);border-top-color:var(--accent);
+    animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-state p{font-family:var(--mono);font-size:12px;color:var(--muted);}
+
+  /* ---------- results ---------- */
+  .verdict-card{
+    border-radius:12px;padding:22px 24px;margin-bottom:28px;
+    border:1px solid var(--panel-border);
+    display:flex;align-items:center;gap:20px;
+  }
+  .verdict-card.go{background:rgba(61,220,151,0.08);border-color:rgba(61,220,151,0.35);}
+  .verdict-card.caution{background:rgba(245,185,66,0.08);border-color:rgba(245,185,66,0.35);}
+  .verdict-card.nogo{background:rgba(255,107,107,0.08);border-color:rgba(255,107,107,0.35);}
+
+  .verdict-score{
+    font-family:var(--mono);font-size:34px;font-weight:700;line-height:1;
+    flex-shrink:0;min-width:64px;text-align:center;
+  }
+  .verdict-card.go .verdict-score{color:var(--go);}
+  .verdict-card.caution .verdict-score{color:var(--caution);}
+  .verdict-card.nogo .verdict-score{color:var(--nogo);}
+  .verdict-score .lbl{display:block;font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:2px;font-weight:500;}
+
+  .verdict-body{flex:1;}
+  .verdict-tag{
+    display:inline-block;font-family:var(--mono);font-size:11px;font-weight:700;
+    letter-spacing:1px;padding:3px 10px;border-radius:5px;margin-bottom:8px;
+  }
+  .verdict-card.go .verdict-tag{background:rgba(61,220,151,0.18);color:var(--go);}
+  .verdict-card.caution .verdict-tag{background:rgba(245,185,66,0.18);color:var(--caution);}
+  .verdict-card.nogo .verdict-tag{background:rgba(255,107,107,0.18);color:var(--nogo);}
+  .verdict-body p{font-size:13px;color:var(--ink);opacity:0.9;}
+
+  .results-grid{display:flex;flex-direction:column;gap:30px;}
+
+  h3.block-title{
+    font-size:13px;font-weight:600;letter-spacing:0.3px;margin-bottom:14px;
+    display:flex;align-items:center;gap:8px;color:var(--ink);
+  }
+  h3.block-title .count{
+    font-family:var(--mono);font-size:11px;color:var(--muted);
+    background:var(--panel);border:1px solid var(--panel-border);
+    padding:1px 8px;border-radius:10px;
+  }
+
+  .reasons-list{display:flex;flex-direction:column;gap:6px;margin-bottom:6px;}
+  .reasons-list li{font-size:12.5px;color:var(--muted);padding-left:16px;position:relative;}
+  .reasons-list li::before{content:'—';position:absolute;left:0;color:var(--accent);}
+
+  .deliv-card{
+    background:var(--panel);border:1px solid var(--panel-border);border-radius:9px;
+    padding:14px 16px;margin-bottom:10px;
+  }
+  .deliv-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:4px;}
+  .deliv-title{font-size:13px;font-weight:600;}
+  .deliv-tags{display:flex;gap:6px;flex-shrink:0;}
+  .tag{
+    font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:4px;white-space:nowrap;
+  }
+  .tag.mandatory{background:rgba(255,107,107,0.12);color:var(--nogo);}
+  .tag.optional{background:rgba(139,146,166,0.12);color:var(--muted);}
+  .tag.weeks{background:rgba(91,140,255,0.12);color:var(--accent);}
+  .deliv-desc{font-size:12px;color:var(--muted);line-height:1.55;}
+
+  .crit-row{
+    display:grid;grid-template-columns:1fr 56px;gap:14px;align-items:center;
+    padding:11px 0;border-bottom:1px solid var(--panel-border);
+  }
+  .crit-row:last-child{border-bottom:none;}
+  .crit-name{font-size:12.5px;font-weight:600;}
+  .crit-desc{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .crit-weight{
+    font-family:var(--mono);font-weight:700;font-size:14px;color:var(--accent);text-align:right;
+  }
+  .crit-bar-track{height:4px;background:var(--panel-border);border-radius:3px;margin-top:8px;overflow:hidden;}
+  .crit-bar-fill{height:100%;background:var(--accent);border-radius:3px;}
+
+  .dept-group{margin-bottom:18px;}
+  .dept-head{
+    display:flex;align-items:center;gap:8px;margin-bottom:8px;
+    font-size:12px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:var(--muted);
+  }
+  .dept-icon{font-size:14px;}
+  .check-item{
+    display:flex;align-items:flex-start;gap:10px;padding:9px 0;
+    border-bottom:1px solid var(--panel-border);
+  }
+  .check-item:last-child{border-bottom:none;}
+  .check-status{
+    flex-shrink:0;width:18px;height:18px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:11px;margin-top:1px;
+  }
+  .check-status.met{background:rgba(61,220,151,0.18);color:var(--go);}
+  .check-status.gap{background:rgba(255,107,107,0.18);color:var(--nogo);}
+  .check-status.needs_review{background:rgba(245,185,66,0.18);color:var(--caution);}
+  .check-text .req{font-size:12.5px;font-weight:500;}
+  .check-text .note{font-size:11.5px;color:var(--muted);margin-top:2px;}
+
+  .disq-box{
+    background:rgba(255,107,107,0.06);border:1px solid rgba(255,107,107,0.3);
+    border-radius:9px;padding:14px 16px;margin-top:6px;
+  }
+  .disq-box li{font-size:12.5px;color:#ffb3b3;padding-left:16px;position:relative;margin-bottom:6px;}
+  .disq-box li::before{content:'⚠';position:absolute;left:0;font-size:11px;}
+  .disq-box li:last-child{margin-bottom:0;}
+
+  .reset-link{
+    display:inline-block;margin-top:24px;font-size:12px;color:var(--muted);
+    cursor:pointer;text-decoration:underline;text-decoration-color:var(--panel-border);
+  }
+  .reset-link:hover{color:var(--accent);}
+
+  .actions-row{display:flex;align-items:center;gap:18px;margin-top:24px;}
+  button.save-btn{
+    background:var(--panel);color:var(--ink);border:1px solid var(--panel-border);
+    border-radius:7px;padding:9px 16px;font-size:12.5px;font-weight:600;
+    cursor:pointer;font-family:var(--sans);display:inline-flex;align-items:center;gap:7px;
+    transition:border-color .15s, background .15s;
+  }
+  button.save-btn:hover{border-color:var(--accent);background:rgba(91,140,255,0.06);}
+  button.save-btn:active{transform:scale(0.98);}
+  button.save-btn.saved{border-color:var(--go);color:var(--go);}
+
+  /* ---- Checklist Table ---- */
+  .cl-table-wrap{overflow-x:auto;margin-bottom:10px;}
+  .cl-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .cl-table thead tr{background:var(--panel);border-bottom:2px solid var(--panel-border);}
+  .cl-table th{padding:9px 12px;text-align:left;font-size:11px;font-weight:700;letter-spacing:0.5px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);}
+  .cl-table td{padding:10px 12px;border-bottom:1px solid var(--panel-border);vertical-align:top;}
+  .cl-table tr:last-child td{border-bottom:none;}
+  .cl-table tr:hover td{background:rgba(91,140,255,0.03);}
+  .cl-item-name{font-weight:600;font-size:12.5px;color:var(--ink);margin-bottom:2px;}
+  .cl-item-q{font-size:11px;color:var(--muted);}
+  .cl-reason{font-size:12px;color:var(--muted);line-height:1.5;}
+  .cl-ans{
+    display:inline-block;font-family:var(--mono);font-size:11px;font-weight:700;
+    padding:3px 9px;border-radius:5px;letter-spacing:0.5px;
+  }
+  .ans-yes{background:rgba(61,220,151,0.15);color:var(--go);}
+  .ans-no{background:rgba(255,107,107,0.15);color:var(--nogo);}
+  .ans-na{background:rgba(139,146,166,0.15);color:var(--muted);}
+  .cl-dec{
+    display:inline-block;font-family:var(--mono);font-size:10px;font-weight:700;
+    padding:3px 7px;border-radius:5px;letter-spacing:0.3px;white-space:nowrap;
+  }
+  .dec-go{background:rgba(61,220,151,0.15);color:var(--go);}
+  .dec-nogo{background:rgba(255,107,107,0.15);color:var(--nogo);}
+  .dec-caution{background:rgba(245,185,66,0.15);color:var(--caution);}
+  .dec-review{background:rgba(139,146,166,0.15);color:var(--muted);}
+
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--panel-border);border-radius:4px;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="brand-mark">📋</div>
+      <div class="brand-text">
+        <h1>RFP Intelligence Portal</h1>
+        <p>extract · evaluate · decide</p>
+      </div>
+    </div>
+    <div class="engine-badge">⚡ gemini-2.5-flash</div>
+  </header>
+
+  <main>
+    <div class="panel-left">
+
+      <div class="section-label"><span class="num">01</span> Upload RFP Document</div>
+      <div id="dropzone" class="dropzone">
+        <div class="icon">📄</div>
+        <div class="main-txt">Click to upload, or drag a file here</div>
+        <div class="sub-txt">PDF, DOCX, or TXT — up to 15MB</div>
+      </div>
+      <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt" style="display:none" />
+      <div id="fileChipHolder"></div>
+
+      <div class="section-label" style="margin-top:24px;"><span class="num">02</span> Company Context <span style="color:var(--muted);text-transform:none;font-weight:400;">(optional)</span></div>
+      <label class="field-label">Our relevant strengths</label>
+      <textarea id="strengths" class="context" placeholder="e.g. 8 years building municipal portals, SOC 2 certified, existing Esri ArcGIS integration experience..."></textarea>
+      <label class="field-label">Known gaps or limitations</label>
+      <textarea id="gaps" class="context" placeholder="e.g. no in-house mobile dev team, would need to subcontract native iOS/Android..."></textarea>
+
+      <div class="section-label" style="margin-top:24px;"><span class="num">03</span> Run Analysis</div>
+      <button id="analyzeBtn" class="primary" disabled>✨ Analyse RFP</button>
+
+      <div id="errorHolder"></div>
+    </div>
+
+    <div class="panel-right" id="resultsPanel">
+      <div class="empty-state">
+        <div class="glyph">🔍</div>
+        <h2>No document analysed yet</h2>
+        <p>Upload an RFP document and click "Analyse RFP" to extract deliverables, evaluation criteria, and a compliance checklist automatically.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const BACKEND_URL = 'http://localhost:3001';
+
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const fileChipHolder = document.getElementById('fileChipHolder');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const errorHolder = document.getElementById('errorHolder');
+const resultsPanel = document.getElementById('resultsPanel');
+const strengthsEl = document.getElementById('strengths');
+const gapsEl = document.getElementById('gaps');
+
+let extractedText = null;
+let currentFile = null;
+let lastResult = null;
+
+dropzone.addEventListener('click', () => fileInput.click());
+['dragover','dragenter'].forEach(evt => dropzone.addEventListener(evt, e => {
+  e.preventDefault(); dropzone.classList.add('drag');
+}));
+['dragleave','drop'].forEach(evt => dropzone.addEventListener(evt, e => {
+  e.preventDefault(); dropzone.classList.remove('drag');
+}));
+dropzone.addEventListener('drop', e => {
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files.length) handleFile(e.target.files[0]);
+});
+
+function fmtBytes(b){
+  if (b < 1024) return b + ' B';
+  if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+  return (b/(1024*1024)).toFixed(1) + ' MB';
+}
+
+async function handleFile(file){
+  currentFile = file;
+  extractedText = null;
+  analyzeBtn.disabled = true;
+  clearError();
+  renderFileChip(file, 'extracting…');
+
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch(`${BACKEND_URL}/api/extract`, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not read this file.');
+    extractedText = data.text;
+    renderFileChip(file, `${data.text.length.toLocaleString()} characters extracted`);
+    analyzeBtn.disabled = false;
+  } catch (err) {
+    renderFileChip(file, null);
+    showError('Could not read file', err.message);
+  }
+}
+
+function renderFileChip(file, statusText){
+  fileChipHolder.innerHTML = `
+    <div class="file-chip">
+      <div class="ficon">📎</div>
+      <div class="finfo">
+        <div class="fname">${escapeHtml(file.name)}</div>
+        <div class="fsize">${fmtBytes(file.size)}${statusText ? ' · ' + statusText : ''}</div>
+      </div>
+      <button class="fremove" id="removeFileBtn" title="Remove file">✕</button>
+    </div>`;
+  document.getElementById('removeFileBtn').addEventListener('click', () => {
+    currentFile = null; extractedText = null;
+    fileChipHolder.innerHTML = '';
+    fileInput.value = '';
+    analyzeBtn.disabled = true;
+  });
+}
+
+function showError(title, msg){
+  errorHolder.innerHTML = `
+    <div class="error-box">
+      <div class="etitle">⚠ ${escapeHtml(title)}</div>
+      ${escapeHtml(msg)}
+    </div>`;
+}
+function clearError(){ errorHolder.innerHTML = ''; }
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+analyzeBtn.addEventListener('click', async () => {
+  if (!extractedText) return;
+  clearError();
+  analyzeBtn.disabled = true;
+  analyzeBtn.textContent = 'Analysing…';
+  renderLoading();
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        rfpText: extractedText,
+        strengths: strengthsEl.value.trim(),
+        gaps: gapsEl.value.trim()
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Analysis failed.');
+    renderResults(data);
+  } catch (err) {
+    renderEmpty();
+    showError('Gemini error', err.message);
+  } finally {
+    analyzeBtn.disabled = false;
+    analyzeBtn.textContent = '✨ Analyse RFP';
+  }
+});
+
+function renderLoading(){
+  resultsPanel.innerHTML = `
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Reading deliverables, criteria & compliance terms…</p>
+    </div>`;
+}
+
+function renderEmpty(){
+  resultsPanel.innerHTML = `
+    <div class="empty-state">
+      <div class="glyph">🔍</div>
+      <h2>No document analysed yet</h2>
+      <p>Upload an RFP document and click "Analyse RFP" to extract deliverables, evaluation criteria, and a compliance checklist automatically.</p>
+    </div>`;
+}
+
+const deptMeta = {
+  Legal:      { icon:'⚖️' },
+  Accounting: { icon:'💰' },
+  Technical:  { icon:'🛠️' },
+  Operations: { icon:'🗂️' },
+  Other:      { icon:'📌' }
+};
+const statusIcon = { met:'✓', gap:'✕', needs_review:'?' };
+
+function renderResults(data){
+  lastResult = data;
+  const rec = (data.recommendation || 'CAUTION').toUpperCase();
+  const recClass = rec === 'GO' ? 'go' : rec === 'NO-GO' ? 'nogo' : 'caution';
+  const score = typeof data.fit_score === 'number' ? data.fit_score : '—';
+
+  let html = '';
+
+  html += `
+    <div class="verdict-card ${recClass}">
+      <div class="verdict-score">${score}<span class="lbl">FIT SCORE</span></div>
+      <div class="verdict-body">
+        <div class="verdict-tag">${escapeHtml(rec)}</div>
+        <p>${escapeHtml(data.recommendation_summary || '')}</p>
+      </div>
+    </div>`;
+
+  html += `<div class="results-grid">`;
+
+  if (Array.isArray(data.disqualifiers) && data.disqualifiers.length){
+    html += `<div>
+      <h3 class="block-title">⚠️ Disqualifiers</h3>
+      <div class="disq-box"><ul style="list-style:none;">
+        ${data.disqualifiers.map(d => `<li>${escapeHtml(d)}</li>`).join('')}
+      </ul></div>
+    </div>`;
+  }
+
+  // Helper to render a checklist section as a table
+  function renderChecklistTable(title, icon, items) {
+    if (!Array.isArray(items) || !items.length) return '';
+    return `<div>
+      <h3 class="block-title">${icon} ${title}</h3>
+      <div class="cl-table-wrap">
+        <table class="cl-table">
+          <thead>
+            <tr>
+              <th>Checklist Item</th>
+              <th style="width:60px;text-align:center;">Yes/No</th>
+              <th style="width:90px;text-align:center;">Decision</th>
+              <th>Reason from RFP</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map(item => {
+              const ans = (item.answer || '').toUpperCase();
+              const dec = (item.decision || '').toUpperCase();
+              const ansClass = ans === 'YES' ? 'ans-yes' : ans === 'NO' ? 'ans-no' : 'ans-na';
+              const decClass = dec === 'GO' ? 'dec-go' : dec === 'NO-GO' ? 'dec-nogo' : dec.includes('ESCALATE') ? 'dec-caution' : 'dec-review';
+              return `<tr>
+                <td>
+                  <div class="cl-item-name">${escapeHtml(item.item || '')}</div>
+                  <div class="cl-item-q">${escapeHtml(item.question || '')}</div>
+                </td>
+                <td style="text-align:center;"><span class="cl-ans ${ansClass}">${escapeHtml(item.answer || 'N/A')}</span></td>
+                <td style="text-align:center;"><span class="cl-dec ${decClass}">${escapeHtml(item.decision || '—')}</span></td>
+                <td class="cl-reason">${escapeHtml(item.reason || '—')}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  html += renderChecklistTable('Financial / Accounting Checklist', '💰', data.financial_checklist);
+  html += renderChecklistTable('Legal Checklist', '⚖️', data.legal_checklist);
+  html += renderChecklistTable('Operations Checklist', '🗂️', data.operations_checklist);
+  html += renderChecklistTable('Technical Checklist', '🛠️', data.technical_checklist);
+
+  html += `</div>`;
+  html += `
+    <div class="actions-row">
+      <button class="save-btn" id="saveBtn">💾 Save Checklist</button>
+      <a class="reset-link" id="resetLink" style="margin-top:0;">↺ Analyse another document</a>
+    </div>`;
+
+  resultsPanel.innerHTML = html;
+  document.getElementById('resetLink').addEventListener('click', () => {
+    renderEmpty();
+  });
+  document.getElementById('saveBtn').addEventListener('click', (e) => {
+    saveChecklistToFile();
+    const btn = e.currentTarget;
+    const original = btn.innerHTML;
+    btn.innerHTML = '✓ Saved';
+    btn.classList.add('saved');
+    setTimeout(() => { btn.innerHTML = original; btn.classList.remove('saved'); }, 1800);
+  });
+}
+
+function saveChecklistToFile(){
+  if (!lastResult) return;
+  const html = buildChecklistHtml(lastResult, currentFile ? currentFile.name : 'RFP Document');
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const baseName = (currentFile ? currentFile.name.replace(/\.[^.]+$/, '') : 'rfp-analysis');
+  const stamp = new Date().toISOString().slice(0,10);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${baseName}-checklist-${stamp}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function buildChecklistHtml(data, sourceName){
+  const rec = (data.recommendation || 'CAUTION').toUpperCase();
+  const recColor = rec === 'GO' ? '#1f9d6b' : rec === 'NO-GO' ? '#d6453d' : '#b8860b';
+  const score = typeof data.fit_score === 'number' ? data.fit_score : '—';
+  const today = new Date().toLocaleDateString(undefined, { year:'numeric', month:'long', day:'numeric' });
+
+  function buildSectionTable(title, icon, items) {
+    if (!Array.isArray(items) || !items.length) return '';
+    return `
+    <h2>${icon} ${title}</h2>
+    <table class="cl-table">
+      <thead><tr>
+        <th style="width:22%">Checklist Item</th>
+        <th style="width:28%">Question</th>
+        <th style="width:8%;text-align:center;">Yes/No</th>
+        <th style="width:12%;text-align:center;">Decision</th>
+        <th>Reason from RFP</th>
+      </tr></thead>
+      <tbody>
+        ${items.map(item => {
+          const ans = (item.answer || '').toUpperCase();
+          const dec = (item.decision || '').toUpperCase();
+          const ansColor = ans === 'YES' ? '#1f9d6b' : ans === 'NO' ? '#d6453d' : '#888';
+          const decColor = dec === 'GO' ? '#1f9d6b' : dec === 'NO-GO' ? '#d6453d' : dec.includes('ESCALATE') ? '#b8860b' : '#888';
+          return `<tr>
+            <td><strong>${escapeHtml(item.item || '')}</strong></td>
+            <td style="color:#555;font-size:12px;">${escapeHtml(item.question || '')}</td>
+            <td style="text-align:center;font-weight:700;color:${ansColor};">${escapeHtml(item.answer || 'N/A')}</td>
+            <td style="text-align:center;"><span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:${decColor}1A;color:${decColor};">${escapeHtml(item.decision || '—')}</span></td>
+            <td style="color:#555;font-size:12px;">${escapeHtml(item.reason || '—')}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  const disqHtml = (data.disqualifiers && data.disqualifiers.length)
+    ? `<div class="disq"><strong>⚠️ Disqualifiers</strong><ul>${data.disqualifiers.map(d => `<li>${escapeHtml(d)}</li>`).join('')}</ul></div>`
+    : '';
+
+  return `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>RFP Checklist — ${escapeHtml(sourceName)}</title>
+<style>
+  body{font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#1a1a2e;max-width:960px;margin:40px auto;padding:0 24px;line-height:1.55;}
+  h1{font-size:22px;margin-bottom:2px;}
+  .meta{color:#777;font-size:12.5px;margin-bottom:28px;}
+  h2{font-size:14px;font-weight:700;border-bottom:2px solid #eee;padding-bottom:6px;margin:32px 0 12px;}
+  .verdict{display:flex;align-items:center;gap:18px;border:1px solid #ddd;border-radius:10px;padding:18px 20px;margin-bottom:20px;}
+  .verdict .score{font-size:30px;font-weight:700;color:${recColor};min-width:60px;text-align:center;}
+  .verdict .score small{display:block;font-size:9px;color:#999;font-weight:500;}
+  .verdict .tag{display:inline-block;font-size:11px;font-weight:700;color:${recColor};background:${recColor}1A;padding:2px 9px;border-radius:5px;margin-bottom:6px;}
+  .cl-table{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:12.5px;}
+  .cl-table th{background:#f5f5f7;padding:8px 10px;text-align:left;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.4px;border-bottom:2px solid #e3e3e3;}
+  .cl-table td{padding:9px 10px;border-bottom:1px solid #eee;vertical-align:top;}
+  .cl-table tr:last-child td{border-bottom:none;}
+  .cl-table tr:hover td{background:#fafafa;}
+  .disq{background:#fdecea;border:1px solid #f3c1bd;border-radius:8px;padding:12px 16px;margin:10px 0;}
+  .disq li{color:#c0392b;font-size:13px;margin-bottom:4px;}
+  ul{margin:6px 0 6px 18px;padding:0;}
+  .footer-note{margin-top:40px;font-size:11px;color:#aaa;border-top:1px solid #eee;padding-top:10px;}
+  @media print{body{margin:0;padding:16px;} h2{page-break-before:auto;}}
+</style></head>
+<body>
+  <h1>RFP Compliance Checklist</h1>
+  <div class="meta">Source: ${escapeHtml(sourceName)} &nbsp;·&nbsp; Generated ${today}</div>
+
+  <div class="verdict">
+    <div class="score">${score}<small>FIT SCORE</small></div>
+    <div>
+      <div class="tag">${escapeHtml(rec)}</div>
+      <div style="font-size:13px;">${escapeHtml(data.recommendation_summary || '')}</div>
+    </div>
+  </div>
+
+  ${disqHtml}
+  ${buildSectionTable('Financial / Accounting Checklist', '💰', data.financial_checklist)}
+  ${buildSectionTable('Legal Checklist', '⚖️', data.legal_checklist)}
+  ${buildSectionTable('Operations Checklist', '🗂️', data.operations_checklist)}
+  ${buildSectionTable('Technical Checklist', '🛠️', data.technical_checklist)}
+
+  <div class="footer-note">Generated by RFP Intelligence Portal · Gemini 2.5 Flash · Verify all terms against the original RFP before submission.</div>
+</body></html>`;
+}
+</script>
+
+</body>
+</html>
