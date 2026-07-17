@@ -4,62 +4,216 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>RFP Intelligence Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg: #0c0e14;
-    --panel: #12151e;
-    --panel-border: #232838;
-    --ink: #e8eaf0;
-    --muted: #8b92a6;
-    --accent: #5b8cff;
-    --accent-dim: #3a4a73;
+    /* --- Control-desk / case-file palette --- */
+    --bg: #0a0c12;
+    --bg-grid: rgba(255,255,255,0.025);
+    --panel: #131722;
+    --panel-2: #171b27;
+    --panel-border: #262b3a;
+    --panel-border-soft: #1d2130;
+    --ink: #eef0f5;
+    --muted: #8b93a8;
+    --muted-dim: #5c6478;
+
+    --accent: #35b8c9;         /* control-desk cyan — primary */
+    --accent-soft: rgba(53,184,201,0.12);
+    --accent-dim: #1c4a52;
+
     --go: #3ddc97;
-    --caution: #f5b942;
+    --go-soft: rgba(61,220,151,0.12);
+    --caution: #f2b544;
+    --caution-soft: rgba(242,181,68,0.12);
     --nogo: #ff6b6b;
-    --mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+    --nogo-soft: rgba(255,107,107,0.12);
+
+    --mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
     --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --display: 'Space Grotesk', 'Inter', sans-serif;
+
+    --radius: 10px;
+    --shadow-soft: 0 1px 0 rgba(255,255,255,0.02) inset, 0 8px 24px rgba(0,0,0,0.35);
   }
   *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
   body{
-    background:var(--bg);
+    background:
+      radial-gradient(circle at 1px 1px, var(--bg-grid) 1px, transparent 0) 0 0/22px 22px,
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(53,184,201,0.06), transparent 60%),
+      var(--bg);
     color:var(--ink);
     font-family:var(--sans);
     min-height:100vh;
     line-height:1.5;
   }
+  ::selection{background:var(--accent-soft);color:var(--ink);}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px;}
+
   .app{display:flex;flex-direction:column;min-height:100vh;}
 
   /* ---------- header ---------- */
   header{
-    border-bottom:1px solid var(--panel-border);
-    padding:18px 32px;
+    border-bottom:1px solid var(--panel-border-soft);
+    padding:16px 28px;
     display:flex;
     align-items:center;
     justify-content:space-between;
-    background:linear-gradient(180deg, rgba(91,140,255,0.06), transparent);
+    background:linear-gradient(180deg, rgba(53,184,201,0.05), transparent);
+    backdrop-filter:blur(6px);
+    position:sticky;top:0;z-index:20;
   }
   .brand{display:flex;align-items:center;gap:12px;}
   .brand-mark{
-    width:36px;height:36px;border-radius:9px;
-    background:linear-gradient(135deg,#5b8cff,#3ddc97);
+    width:38px;height:38px;border-radius:9px;
+    background:linear-gradient(135deg,#35b8c9,#3ddc97);
     display:flex;align-items:center;justify-content:center;
     font-size:18px;flex-shrink:0;
+    box-shadow:0 4px 14px rgba(53,184,201,0.25);
   }
-  .brand-text h1{font-size:16px;font-weight:600;letter-spacing:0.2px;}
-  .brand-text p{font-size:11.5px;color:var(--muted);font-family:var(--mono);letter-spacing:0.3px;}
+  .brand-text h1{font-family:var(--display);font-size:16.5px;font-weight:700;letter-spacing:0.2px;}
+  .brand-text p{font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:1px;text-transform:uppercase;margin-top:1px;}
+  .header-right{display:flex;align-items:center;gap:10px;}
   .engine-badge{
     font-family:var(--mono);font-size:11px;color:var(--muted);
     border:1px solid var(--panel-border);border-radius:20px;
-    padding:5px 12px;
+    padding:5px 12px;display:flex;align-items:center;gap:6px;
+  }
+  .engine-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--go);box-shadow:0 0 8px var(--go);}
+  .history-toggle{
+    display:none;
+    font-family:var(--mono);font-size:11px;color:var(--ink);
+    border:1px solid var(--panel-border);background:var(--panel);border-radius:20px;
+    padding:6px 14px;cursor:pointer;align-items:center;gap:6px;
   }
 
   /* ---------- layout ---------- */
-  main{flex:1;display:grid;grid-template-columns:380px 1fr;min-height:0;}
-  @media (max-width: 900px){ main{grid-template-columns:1fr;} }
+  main{flex:1;display:grid;grid-template-columns:250px 380px 1fr;min-height:0;}
+  @media (max-width: 1180px){ main{grid-template-columns:220px 340px 1fr;} }
+  @media (max-width: 900px){
+    main{grid-template-columns:1fr;}
+    .history-sidebar{
+      position:fixed;inset:0 0 0 auto;width:290px;z-index:40;
+      transform:translateX(100%);transition:transform .2s ease;
+      box-shadow:-20px 0 40px rgba(0,0,0,0.5);
+    }
+    .history-sidebar.open{transform:translateX(0);}
+    .history-toggle{display:inline-flex;}
+    .history-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:35;}
+    .history-backdrop.open{display:block;}
+  }
+
+  /* ---------- history sidebar (signature element: case-file index) ---------- */
+  .history-sidebar{
+    border-right:1px solid var(--panel-border-soft);
+    background:var(--panel-2);
+    padding:22px 16px;
+    overflow-y:auto;
+    display:flex;flex-direction:column;
+  }
+  .history-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px;}
+  .history-head h2{font-family:var(--display);font-size:12.5px;font-weight:700;letter-spacing:0.4px;}
+  .history-count{font-family:var(--mono);font-size:10.5px;color:var(--muted-dim);}
+  .history-sub{font-size:10.5px;color:var(--muted-dim);font-family:var(--mono);margin-bottom:16px;letter-spacing:0.3px;}
+
+  .history-empty{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;color:var(--muted-dim);gap:8px;padding:30px 10px;
+  }
+  .history-empty .g{font-size:22px;opacity:0.5;}
+  .history-empty p{font-size:11.5px;line-height:1.5;}
+
+  .history-list{list-style:none;display:flex;flex-direction:column;gap:8px;flex:1;}
+  .history-item{
+    position:relative;
+    background:var(--panel);border:1px solid var(--panel-border);
+    border-left:3px solid var(--muted-dim);
+    border-radius:7px;padding:10px 12px 10px 12px;
+    cursor:pointer;transition:border-color .12s, background .12s, transform .08s;
+  }
+  .history-item:hover{background:var(--panel-2);transform:translateX(2px);}
+  .history-item.active{background:var(--accent-soft);border-color:rgba(53,184,201,0.35);}
+  .history-item.go{border-left-color:var(--go);}
+  .history-item.caution{border-left-color:var(--caution);}
+  .history-item.nogo{border-left-color:var(--nogo);}
+  .history-item .h-top{display:flex;align-items:center;justify-content:between;gap:8px;margin-bottom:5px;}
+  .history-item .h-idx{font-family:var(--mono);font-size:9.5px;color:var(--muted-dim);letter-spacing:0.5px;}
+  .history-item .h-score{
+    font-family:var(--mono);font-size:11px;font-weight:700;margin-left:auto;
+  }
+  .history-item.go .h-score{color:var(--go);}
+  .history-item.caution .h-score{color:var(--caution);}
+  .history-item.nogo .h-score{color:var(--nogo);}
+  .history-item .h-name{
+    font-size:12px;font-weight:600;color:var(--ink);
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+    margin-bottom:3px;line-height:1.35;
+  }
+  .history-item .h-date{font-size:10px;color:var(--muted-dim);font-family:var(--mono);}
+  .history-item .h-cats, .history-item .h-pages{
+    font-size:10px;color:var(--muted);line-height:1.4;margin-top:4px;
+    display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .history-item .h-pages{font-family:var(--mono);color:var(--muted-dim);}
+  .history-item .h-remove{
+    position:absolute;top:6px;right:6px;background:none;border:none;color:var(--muted-dim);
+    font-size:12px;cursor:pointer;padding:3px 5px;border-radius:4px;opacity:0;transition:opacity .12s;
+  }
+  .history-item:hover .h-remove{opacity:1;}
+  .history-item .h-remove:hover{color:var(--nogo);background:rgba(255,107,107,0.1);}
+
+  .history-clear{
+    margin-top:14px;width:100%;background:none;border:1px dashed var(--panel-border);
+    color:var(--muted);border-radius:7px;padding:8px;font-size:11px;font-family:var(--mono);
+    cursor:pointer;transition:border-color .12s,color .12s;
+  }
+  .history-clear:hover{border-color:var(--nogo);color:var(--nogo);}
+
+  /* ---- Source strip + batch tabs (multi-document results) ---- */
+  .source-strip{
+    display:flex;align-items:center;gap:9px;margin-bottom:14px;
+    font-size:12px;color:var(--muted);
+  }
+  .source-strip .ss-name{font-weight:700;color:var(--ink);font-family:var(--display);}
+  .source-strip .ss-date{font-family:var(--mono);font-size:10.5px;color:var(--muted-dim);}
+  .source-strip .ss-tag{
+    font-family:var(--mono);font-size:9.5px;letter-spacing:0.4px;text-transform:uppercase;
+    background:var(--accent-soft);color:var(--accent);padding:2px 8px;border-radius:20px;
+  }
+
+  .batch-tabs{
+    display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;
+    padding-bottom:14px;border-bottom:1px solid var(--panel-border-soft);
+  }
+  .batch-tab{
+    display:flex;align-items:center;gap:8px;
+    background:var(--panel);border:1px solid var(--panel-border);border-left:3px solid var(--muted-dim);
+    border-radius:7px;padding:7px 12px;cursor:pointer;font-family:var(--sans);
+    transition:border-color .12s, background .12s;
+  }
+  .batch-tab:hover{background:var(--panel-2);}
+  .batch-tab.go{border-left-color:var(--go);}
+  .batch-tab.caution{border-left-color:var(--caution);}
+  .batch-tab.nogo{border-left-color:var(--nogo);}
+  .batch-tab.active{background:var(--accent-soft);border-color:rgba(53,184,201,0.35);}
+  .batch-tab .bt-name{font-size:12px;font-weight:600;color:var(--ink);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .batch-tab .bt-score{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--muted);}
+  .batch-tab.go .bt-score{color:var(--go);}
+  .batch-tab.caution .bt-score{color:var(--caution);}
+  .batch-tab.nogo .bt-score{color:var(--nogo);}
+
+  .batch-progress{font-family:var(--mono);font-size:10.5px;color:var(--muted-dim);margin-top:8px;text-align:center;}
+
+  .file-chip-error{border-color:rgba(255,107,107,0.4);}
+  .file-chip-done{border-color:rgba(61,220,151,0.35);}
+  .file-chip-analysing{border-color:rgba(53,184,201,0.4);}
 
   .panel-left{
-    border-right:1px solid var(--panel-border);
-    padding:28px;
+    border-right:1px solid var(--panel-border-soft);
+    padding:26px 24px;
     overflow-y:auto;
   }
   .panel-right{
@@ -68,19 +222,19 @@
   }
 
   .section-label{
-    font-family:var(--mono);font-size:11px;letter-spacing:1.2px;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:1.4px;
     color:var(--accent);text-transform:uppercase;margin-bottom:10px;
-    display:flex;align-items:center;gap:8px;
+    display:flex;align-items:center;gap:8px;font-weight:600;
   }
   .section-label .num{
-    color:var(--muted);
+    color:var(--muted-dim);
   }
 
   /* ---------- upload box ---------- */
   .dropzone{
     border:1.5px dashed var(--panel-border);
-    border-radius:10px;
-    padding:28px 16px;
+    border-radius:var(--radius);
+    padding:26px 16px;
     text-align:center;
     cursor:pointer;
     transition:border-color .15s, background .15s;
@@ -88,11 +242,11 @@
   }
   .dropzone:hover, .dropzone.drag{
     border-color:var(--accent);
-    background:rgba(91,140,255,0.05);
+    background:var(--accent-soft);
   }
-  .dropzone .icon{font-size:26px;margin-bottom:8px;}
-  .dropzone .main-txt{font-size:13.5px;font-weight:500;}
-  .dropzone .sub-txt{font-size:11.5px;color:var(--muted);margin-top:4px;}
+  .dropzone .icon{font-size:24px;margin-bottom:8px;}
+  .dropzone .main-txt{font-size:13px;font-weight:600;}
+  .dropzone .sub-txt{font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--mono);}
 
   .file-chip{
     display:flex;align-items:center;gap:10px;
@@ -101,7 +255,7 @@
   }
   .file-chip .ficon{font-size:16px;}
   .file-chip .finfo{flex:1;min-width:0;}
-  .file-chip .fname{font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .file-chip .fname{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .file-chip .fsize{font-size:10.5px;color:var(--muted);font-family:var(--mono);}
   .file-chip .fremove{
     background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;
@@ -115,35 +269,36 @@
     padding:10px 12px;resize:vertical;min-height:64px;margin-bottom:14px;
   }
   textarea.context:focus{outline:none;border-color:var(--accent);}
-  textarea.context::placeholder{color:var(--muted);}
+  textarea.context::placeholder{color:var(--muted-dim);}
 
   label.field-label{
-    font-size:11.5px;color:var(--muted);display:block;margin-bottom:6px;font-weight:500;
+    font-size:11.5px;color:var(--muted);display:block;margin-bottom:6px;font-weight:600;
   }
 
   button.primary{
-    width:100%;background:var(--accent);color:#fff;border:none;
-    border-radius:8px;padding:13px;font-size:13.5px;font-weight:600;
-    cursor:pointer;transition:background .15s, transform .08s;
-    font-family:var(--sans);
+    width:100%;background:linear-gradient(135deg,var(--accent),#2a95a3);color:#fff;border:none;
+    border-radius:8px;padding:13px;font-size:13.5px;font-weight:700;
+    cursor:pointer;transition:filter .15s, transform .08s;
+    font-family:var(--sans);letter-spacing:0.2px;
+    box-shadow:0 6px 18px rgba(53,184,201,0.22);
   }
-  button.primary:hover:not(:disabled){background:#4a78e0;}
+  button.primary:hover:not(:disabled){filter:brightness(1.08);}
   button.primary:active:not(:disabled){transform:scale(0.99);}
-  button.primary:disabled{background:var(--accent-dim);cursor:not-allowed;color:rgba(255,255,255,0.5);}
+  button.primary:disabled{background:var(--accent-dim);cursor:not-allowed;color:rgba(255,255,255,0.45);box-shadow:none;}
 
   .error-box{
-    margin-top:14px;background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.35);
+    margin-top:14px;background:var(--nogo-soft);border:1px solid rgba(255,107,107,0.35);
     border-radius:8px;padding:12px 14px;font-size:12px;color:#ffb3b3;line-height:1.5;
   }
-  .error-box .etitle{font-weight:600;color:var(--nogo);margin-bottom:4px;}
+  .error-box .etitle{font-weight:700;color:var(--nogo);margin-bottom:4px;}
 
   /* ---------- empty state ---------- */
   .empty-state{
     flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
     text-align:center;color:var(--muted);min-height:420px;gap:12px;
   }
-  .empty-state .glyph{font-size:34px;opacity:0.5;}
-  .empty-state h2{font-size:16px;color:var(--ink);font-weight:600;}
+  .empty-state .glyph{font-size:32px;opacity:0.45;}
+  .empty-state h2{font-family:var(--display);font-size:16px;color:var(--ink);font-weight:700;}
   .empty-state p{font-size:13px;max-width:340px;}
 
   .loading-state{
@@ -151,7 +306,7 @@
     min-height:420px;gap:16px;
   }
   .spinner{
-    width:34px;height:34px;border-radius:50%;
+    width:32px;height:32px;border-radius:50%;
     border:3px solid var(--panel-border);border-top-color:var(--accent);
     animation:spin 0.8s linear infinite;
   }
@@ -159,14 +314,27 @@
   .loading-state p{font-family:var(--mono);font-size:12px;color:var(--muted);}
 
   /* ---------- results ---------- */
+
+  .deadline-banner{
+    display:flex;align-items:center;gap:12px;
+    background:var(--nogo-soft);border:1px solid rgba(255,107,107,0.45);
+    border-radius:var(--radius);padding:14px 18px;margin-bottom:18px;
+    font-size:13px;color:#ffb3b3;font-weight:600;
+  }
+  .deadline-banner.unknown{
+    background:var(--caution-soft);border-color:rgba(242,181,68,0.4);color:var(--caution);
+  }
+  .deadline-banner .dicon{font-size:18px;flex-shrink:0;}
+
   .verdict-card{
-    border-radius:12px;padding:22px 24px;margin-bottom:28px;
+    border-radius:14px;padding:22px 24px;margin-bottom:28px;
     border:1px solid var(--panel-border);
     display:flex;align-items:center;gap:20px;
+    box-shadow:var(--shadow-soft);
   }
-  .verdict-card.go{background:rgba(61,220,151,0.08);border-color:rgba(61,220,151,0.35);}
-  .verdict-card.caution{background:rgba(245,185,66,0.08);border-color:rgba(245,185,66,0.35);}
-  .verdict-card.nogo{background:rgba(255,107,107,0.08);border-color:rgba(255,107,107,0.35);}
+  .verdict-card.go{background:linear-gradient(135deg, rgba(61,220,151,0.09), rgba(61,220,151,0.02));border-color:rgba(61,220,151,0.35);}
+  .verdict-card.caution{background:linear-gradient(135deg, rgba(242,181,68,0.09), rgba(242,181,68,0.02));border-color:rgba(242,181,68,0.35);}
+  .verdict-card.nogo{background:linear-gradient(135deg, rgba(255,107,107,0.09), rgba(255,107,107,0.02));border-color:rgba(255,107,107,0.35);}
 
   .verdict-score{
     font-family:var(--mono);font-size:34px;font-weight:700;line-height:1;
@@ -175,7 +343,7 @@
   .verdict-card.go .verdict-score{color:var(--go);}
   .verdict-card.caution .verdict-score{color:var(--caution);}
   .verdict-card.nogo .verdict-score{color:var(--nogo);}
-  .verdict-score .lbl{display:block;font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:2px;font-weight:500;}
+  .verdict-score .lbl{display:block;font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:2px;font-weight:600;}
 
   .verdict-body{flex:1;}
   .verdict-tag{
@@ -183,77 +351,25 @@
     letter-spacing:1px;padding:3px 10px;border-radius:5px;margin-bottom:8px;
   }
   .verdict-card.go .verdict-tag{background:rgba(61,220,151,0.18);color:var(--go);}
-  .verdict-card.caution .verdict-tag{background:rgba(245,185,66,0.18);color:var(--caution);}
+  .verdict-card.caution .verdict-tag{background:rgba(242,181,68,0.18);color:var(--caution);}
   .verdict-card.nogo .verdict-tag{background:rgba(255,107,107,0.18);color:var(--nogo);}
   .verdict-body p{font-size:13px;color:var(--ink);opacity:0.9;}
 
   .results-grid{display:flex;flex-direction:column;gap:30px;}
 
   h3.block-title{
-    font-size:13px;font-weight:600;letter-spacing:0.3px;margin-bottom:14px;
+    font-family:var(--display);
+    font-size:13.5px;font-weight:700;letter-spacing:0.2px;margin-bottom:14px;
     display:flex;align-items:center;gap:8px;color:var(--ink);
   }
   h3.block-title .count{
     font-family:var(--mono);font-size:11px;color:var(--muted);
     background:var(--panel);border:1px solid var(--panel-border);
-    padding:1px 8px;border-radius:10px;
+    padding:1px 8px;border-radius:10px;font-weight:500;
   }
-
-  .reasons-list{display:flex;flex-direction:column;gap:6px;margin-bottom:6px;}
-  .reasons-list li{font-size:12.5px;color:var(--muted);padding-left:16px;position:relative;}
-  .reasons-list li::before{content:'—';position:absolute;left:0;color:var(--accent);}
-
-  .deliv-card{
-    background:var(--panel);border:1px solid var(--panel-border);border-radius:9px;
-    padding:14px 16px;margin-bottom:10px;
-  }
-  .deliv-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:4px;}
-  .deliv-title{font-size:13px;font-weight:600;}
-  .deliv-tags{display:flex;gap:6px;flex-shrink:0;}
-  .tag{
-    font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:4px;white-space:nowrap;
-  }
-  .tag.mandatory{background:rgba(255,107,107,0.12);color:var(--nogo);}
-  .tag.optional{background:rgba(139,146,166,0.12);color:var(--muted);}
-  .tag.weeks{background:rgba(91,140,255,0.12);color:var(--accent);}
-  .deliv-desc{font-size:12px;color:var(--muted);line-height:1.55;}
-
-  .crit-row{
-    display:grid;grid-template-columns:1fr 56px;gap:14px;align-items:center;
-    padding:11px 0;border-bottom:1px solid var(--panel-border);
-  }
-  .crit-row:last-child{border-bottom:none;}
-  .crit-name{font-size:12.5px;font-weight:600;}
-  .crit-desc{font-size:11.5px;color:var(--muted);margin-top:2px;}
-  .crit-weight{
-    font-family:var(--mono);font-weight:700;font-size:14px;color:var(--accent);text-align:right;
-  }
-  .crit-bar-track{height:4px;background:var(--panel-border);border-radius:3px;margin-top:8px;overflow:hidden;}
-  .crit-bar-fill{height:100%;background:var(--accent);border-radius:3px;}
-
-  .dept-group{margin-bottom:18px;}
-  .dept-head{
-    display:flex;align-items:center;gap:8px;margin-bottom:8px;
-    font-size:12px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:var(--muted);
-  }
-  .dept-icon{font-size:14px;}
-  .check-item{
-    display:flex;align-items:flex-start;gap:10px;padding:9px 0;
-    border-bottom:1px solid var(--panel-border);
-  }
-  .check-item:last-child{border-bottom:none;}
-  .check-status{
-    flex-shrink:0;width:18px;height:18px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;font-size:11px;margin-top:1px;
-  }
-  .check-status.met{background:rgba(61,220,151,0.18);color:var(--go);}
-  .check-status.gap{background:rgba(255,107,107,0.18);color:var(--nogo);}
-  .check-status.needs_review{background:rgba(245,185,66,0.18);color:var(--caution);}
-  .check-text .req{font-size:12.5px;font-weight:500;}
-  .check-text .note{font-size:11.5px;color:var(--muted);margin-top:2px;}
 
   .disq-box{
-    background:rgba(255,107,107,0.06);border:1px solid rgba(255,107,107,0.3);
+    background:var(--nogo-soft);border:1px solid rgba(255,107,107,0.3);
     border-radius:9px;padding:14px 16px;margin-top:6px;
   }
   .disq-box li{font-size:12.5px;color:#ffb3b3;padding-left:16px;position:relative;margin-bottom:6px;}
@@ -269,42 +385,94 @@
   .actions-row{display:flex;align-items:center;gap:18px;margin-top:24px;}
   button.save-btn{
     background:var(--panel);color:var(--ink);border:1px solid var(--panel-border);
-    border-radius:7px;padding:9px 16px;font-size:12.5px;font-weight:600;
+    border-radius:7px;padding:9px 16px;font-size:12.5px;font-weight:700;
     cursor:pointer;font-family:var(--sans);display:inline-flex;align-items:center;gap:7px;
     transition:border-color .15s, background .15s;
   }
-  button.save-btn:hover{border-color:var(--accent);background:rgba(91,140,255,0.06);}
+  button.save-btn:hover{border-color:var(--accent);background:var(--accent-soft);}
   button.save-btn:active{transform:scale(0.98);}
   button.save-btn.saved{border-color:var(--go);color:var(--go);}
 
-  /* ---- Checklist Table ---- */
-  .cl-table-wrap{overflow-x:auto;margin-bottom:10px;}
+  /* ---- Checklist Table (Financial / Legal / Ops / Technical) ---- */
+  .cl-table-wrap{overflow-x:auto;margin-bottom:10px;border:1px solid var(--panel-border-soft);border-radius:10px;}
   .cl-table{width:100%;border-collapse:collapse;font-size:12.5px;}
   .cl-table thead tr{background:var(--panel);border-bottom:2px solid var(--panel-border);}
-  .cl-table th{padding:9px 12px;text-align:left;font-size:11px;font-weight:700;letter-spacing:0.5px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);}
-  .cl-table td{padding:10px 12px;border-bottom:1px solid var(--panel-border);vertical-align:top;}
+  .cl-table th{padding:9px 12px;text-align:left;font-size:10.5px;font-weight:700;letter-spacing:0.5px;color:var(--muted);text-transform:uppercase;font-family:var(--mono);}
+  .cl-table td{padding:10px 12px;border-bottom:1px solid var(--panel-border-soft);vertical-align:top;}
   .cl-table tr:last-child td{border-bottom:none;}
-  .cl-table tr:hover td{background:rgba(91,140,255,0.03);}
-  .cl-item-name{font-weight:600;font-size:12.5px;color:var(--ink);margin-bottom:2px;}
+  .cl-table tr:hover td{background:rgba(53,184,201,0.03);}
+  .cl-item-name{font-weight:700;font-size:12.5px;color:var(--ink);margin-bottom:2px;}
   .cl-item-q{font-size:11px;color:var(--muted);}
   .cl-reason{font-size:12px;color:var(--muted);line-height:1.5;}
   .cl-ans{
     display:inline-block;font-family:var(--mono);font-size:11px;font-weight:700;
     padding:3px 9px;border-radius:5px;letter-spacing:0.5px;
   }
-  .ans-yes{background:rgba(61,220,151,0.15);color:var(--go);}
-  .ans-no{background:rgba(255,107,107,0.15);color:var(--nogo);}
+  .ans-yes{background:var(--go-soft);color:var(--go);}
+  .ans-no{background:var(--nogo-soft);color:var(--nogo);}
   .ans-na{background:rgba(139,146,166,0.15);color:var(--muted);}
   .cl-dec{
     display:inline-block;font-family:var(--mono);font-size:10px;font-weight:700;
     padding:3px 7px;border-radius:5px;letter-spacing:0.3px;white-space:nowrap;
   }
-  .dec-go{background:rgba(61,220,151,0.15);color:var(--go);}
-  .dec-nogo{background:rgba(255,107,107,0.15);color:var(--nogo);}
-  .dec-caution{background:rgba(245,185,66,0.15);color:var(--caution);}
+  .dec-go{background:var(--go-soft);color:var(--go);}
+  .dec-nogo{background:var(--nogo-soft);color:var(--nogo);}
+  .dec-caution{background:var(--caution-soft);color:var(--caution);}
   .dec-review{background:rgba(139,146,166,0.15);color:var(--muted);}
 
-  ::-webkit-scrollbar{width:8px;}
+  /* ---- Insurance figures table ---- */
+  .insurance-note{font-size:12.5px;margin-bottom:10px;}
+  .insurance-note.over{color:var(--nogo);}
+  .insurance-note.under{color:var(--go);}
+  .insurance-table td.over{color:var(--nogo);font-weight:700;}
+  .insurance-table td.under{color:var(--go);font-weight:700;}
+
+  /* ---- Deliverables: Parent (category) / Child (item) sections ---- */
+  .deliv-category{
+    border:1px solid var(--panel-border-soft);border-radius:10px;
+    margin-bottom:14px;overflow:hidden;background:var(--panel);
+  }
+  .deliv-cat-header{
+    display:flex;align-items:center;gap:10px;
+    padding:13px 16px;cursor:pointer;user-select:none;
+    background:linear-gradient(180deg, rgba(53,184,201,0.07), transparent);
+    list-style:none;
+  }
+  .deliv-cat-header::-webkit-details-marker{display:none;}
+  .deliv-cat-header .chev{
+    font-size:11px;color:var(--muted);transition:transform .15s;flex-shrink:0;
+  }
+  details[open] > .deliv-cat-header .chev{transform:rotate(90deg);}
+  .deliv-cat-name{font-weight:700;font-size:13.5px;color:var(--ink);}
+  .deliv-cat-count{
+    font-family:var(--mono);font-size:10.5px;color:var(--accent);
+    background:var(--accent-soft);padding:1px 8px;border-radius:9px;
+  }
+  .deliv-due{font-size:11px;color:var(--muted);margin-left:auto;font-family:var(--mono);white-space:nowrap;}
+
+  .deliv-children{padding:4px 16px 14px;}
+  .deliv-child{
+    display:flex;flex-direction:column;gap:5px;
+    padding:11px 12px;margin-top:8px;
+    background:var(--bg);border:1px solid var(--panel-border-soft);border-radius:8px;
+  }
+  .deliv-child-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+  .deliv-child-title{font-size:12.5px;font-weight:600;color:var(--ink);}
+  .deliv-child-tags{display:flex;gap:6px;flex-shrink:0;}
+  .deliv-child-badges{display:flex;gap:6px;flex-wrap:wrap;}
+  .cite-badge{
+    display:inline-flex;align-items:center;gap:3px;
+    font-family:var(--mono);font-size:10px;font-weight:700;
+    padding:2px 8px;border-radius:5px;white-space:nowrap;letter-spacing:0.2px;
+  }
+  .cite-badge.cite-page{background:var(--caution-soft);color:var(--caution);}
+  .cite-badge.cite-section{background:var(--accent-soft);color:var(--accent);}
+  .cite-badge.cite-doc{background:rgba(178,140,255,0.14);color:#b28cff;}
+  .deliv-child-ref{
+    font-size:11.5px;color:var(--muted);line-height:1.5;
+  }
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
   ::-webkit-scrollbar-track{background:transparent;}
   ::-webkit-scrollbar-thumb{background:var(--panel-border);border-radius:4px;}
 </style>
@@ -320,19 +488,38 @@
         <p>extract · evaluate · decide</p>
       </div>
     </div>
-    <div class="engine-badge">⚡ gemini-2.5-flash</div>
+    <div class="header-right">
+      <button class="history-toggle" id="historyToggle">🕘 History</button>
+      <div class="engine-badge"><span class="dot"></span> gemini-3.5-flash</div>
+    </div>
   </header>
 
+  <div class="history-backdrop" id="historyBackdrop"></div>
+
   <main>
+    <aside class="history-sidebar" id="historySidebar">
+      <div class="history-head">
+        <h2>Case History</h2>
+        <span class="history-count" id="historyCount">0</span>
+      </div>
+      <div class="history-sub">Previously analysed RFPs</div>
+      <div id="historyListHolder" style="flex:1;display:flex;flex-direction:column;min-height:0;">
+        <div class="history-empty">
+          <div class="g">🗂️</div>
+          <p>Nothing analysed yet.<br>Completed analyses will be indexed here.</p>
+        </div>
+      </div>
+    </aside>
+
     <div class="panel-left">
 
-      <div class="section-label"><span class="num">01</span> Upload RFP Document</div>
+      <div class="section-label"><span class="num">01</span> Upload RFP Document(s)</div>
       <div id="dropzone" class="dropzone">
         <div class="icon">📄</div>
-        <div class="main-txt">Click to upload, or drag a file here</div>
-        <div class="sub-txt">PDF, DOCX, or TXT — up to 15MB</div>
+        <div class="main-txt">Click to upload, or drag files here</div>
+        <div class="sub-txt">PDF, DOCX, or TXT — up to 15MB each · multiple files supported</div>
       </div>
-      <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt" style="display:none" />
+      <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt" multiple style="display:none" />
       <div id="fileChipHolder"></div>
 
       <div class="section-label" style="margin-top:24px;"><span class="num">02</span> Company Context <span style="color:var(--muted);text-transform:none;font-weight:400;">(optional)</span></div>
@@ -343,6 +530,7 @@
 
       <div class="section-label" style="margin-top:24px;"><span class="num">03</span> Run Analysis</div>
       <button id="analyzeBtn" class="primary" disabled>✨ Analyse RFP</button>
+      <div id="batchProgress" class="batch-progress"></div>
 
       <div id="errorHolder"></div>
     </div>
@@ -369,8 +557,15 @@ const resultsPanel = document.getElementById('resultsPanel');
 const strengthsEl = document.getElementById('strengths');
 const gapsEl = document.getElementById('gaps');
 
-let extractedText = null;
-let currentFile = null;
+// ---------------------------------------------------------------------
+// MULTI-FILE UPLOAD QUEUE
+// Each entry: { id, file, status: 'extracting'|'ready'|'error'|'analysing'|'done',
+//               text, error, statusText }
+// The extract/analyze calls themselves are untouched — one /api/extract
+// call and one /api/analyze call per file, exactly as before. We just
+// loop over the queue instead of assuming a single file.
+// ---------------------------------------------------------------------
+let pendingFiles = [];
 let lastResult = null;
 
 dropzone.addEventListener('click', () => fileInput.click());
@@ -381,10 +576,11 @@ dropzone.addEventListener('click', () => fileInput.click());
   e.preventDefault(); dropzone.classList.remove('drag');
 }));
 dropzone.addEventListener('drop', e => {
-  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  if (e.dataTransfer.files.length) handleFiles(Array.from(e.dataTransfer.files));
 });
 fileInput.addEventListener('change', e => {
-  if (e.target.files.length) handleFile(e.target.files[0]);
+  if (e.target.files.length) handleFiles(Array.from(e.target.files));
+  fileInput.value = '';
 });
 
 function fmtBytes(b){
@@ -393,43 +589,76 @@ function fmtBytes(b){
   return (b/(1024*1024)).toFixed(1) + ' MB';
 }
 
-async function handleFile(file){
-  currentFile = file;
-  extractedText = null;
-  analyzeBtn.disabled = true;
+function handleFiles(files){
   clearError();
-  renderFileChip(file, 'extracting…');
+  files.forEach(file => {
+    const pf = { id: 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), file, status: 'extracting', text: null, error: null };
+    pendingFiles.push(pf);
+    extractOneFile(pf);
+  });
+  renderFileChips();
+  updateAnalyzeBtnState();
+}
 
+async function extractOneFile(pf){
   try {
     const fd = new FormData();
-    fd.append('file', file);
+    fd.append('file', pf.file);
     const res = await fetch(`${BACKEND_URL}/api/extract`, { method: 'POST', body: fd });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Could not read this file.');
-    extractedText = data.text;
-    renderFileChip(file, `${data.text.length.toLocaleString()} characters extracted`);
-    analyzeBtn.disabled = false;
+    pf.text = data.text;
+    pf.status = 'ready';
+    pf.statusText = `${data.text.length.toLocaleString()} characters extracted`;
   } catch (err) {
-    renderFileChip(file, null);
-    showError('Could not read file', err.message);
+    pf.status = 'error';
+    pf.error = err.message;
+  }
+  renderFileChips();
+  updateAnalyzeBtnState();
+}
+
+function updateAnalyzeBtnState(){
+  const readyCount = pendingFiles.filter(f => f.status === 'ready').length;
+  const busy = pendingFiles.some(f => f.status === 'extracting' || f.status === 'analysing');
+  analyzeBtn.disabled = readyCount === 0 || busy;
+  if (!busy) {
+    analyzeBtn.textContent = readyCount > 1 ? `✨ Analyse ${readyCount} RFPs` : '✨ Analyse RFP';
   }
 }
 
-function renderFileChip(file, statusText){
-  fileChipHolder.innerHTML = `
-    <div class="file-chip">
-      <div class="ficon">📎</div>
+function removeFile(id){
+  pendingFiles = pendingFiles.filter(f => f.id !== id);
+  renderFileChips();
+  updateAnalyzeBtnState();
+}
+
+function statusIcon(status){
+  if (status === 'extracting' || status === 'analysing') return '⏳';
+  if (status === 'ready') return '📎';
+  if (status === 'done') return '✅';
+  if (status === 'error') return '⚠️';
+  return '📎';
+}
+
+function renderFileChips(){
+  if (!pendingFiles.length){ fileChipHolder.innerHTML = ''; return; }
+  fileChipHolder.innerHTML = pendingFiles.map(pf => {
+    const sub = pf.status === 'error'
+      ? `<span style="color:var(--nogo);">${escapeHtml(pf.error || 'Failed')}</span>`
+      : `${fmtBytes(pf.file.size)}${pf.statusText ? ' · ' + escapeHtml(pf.statusText) : (pf.status === 'extracting' ? ' · extracting…' : (pf.status === 'analysing' ? ' · analysing…' : ''))}`;
+    return `
+    <div class="file-chip file-chip-${pf.status}">
+      <div class="ficon">${statusIcon(pf.status)}</div>
       <div class="finfo">
-        <div class="fname">${escapeHtml(file.name)}</div>
-        <div class="fsize">${fmtBytes(file.size)}${statusText ? ' · ' + statusText : ''}</div>
+        <div class="fname">${escapeHtml(pf.file.name)}</div>
+        <div class="fsize">${sub}</div>
       </div>
-      <button class="fremove" id="removeFileBtn" title="Remove file">✕</button>
+      <button class="fremove" data-remove-file="${pf.id}" title="Remove file">✕</button>
     </div>`;
-  document.getElementById('removeFileBtn').addEventListener('click', () => {
-    currentFile = null; extractedText = null;
-    fileChipHolder.innerHTML = '';
-    fileInput.value = '';
-    analyzeBtn.disabled = true;
+  }).join('');
+  fileChipHolder.querySelectorAll('[data-remove-file]').forEach(btn => {
+    btn.addEventListener('click', () => removeFile(btn.dataset.removeFile));
   });
 }
 
@@ -446,33 +675,53 @@ function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+let currentBatchEntries = []; // entries created by the most recent analyse run, for the tab strip
+
 analyzeBtn.addEventListener('click', async () => {
-  if (!extractedText) return;
+  const queue = pendingFiles.filter(f => f.status === 'ready');
+  if (!queue.length) return;
   clearError();
   analyzeBtn.disabled = true;
-  analyzeBtn.textContent = 'Analysing…';
+  analyzeBtn.textContent = queue.length > 1 ? `Analysing ${queue.length} RFPs together…` : 'Analysing…';
   renderLoading();
+  queue.forEach(pf => { pf.status = 'analysing'; });
+  renderFileChips();
 
   try {
-    const res = await fetch(`${BACKEND_URL}/api/analyze`, {
+    // ONE request covering ALL uploaded documents — the backend merges them
+    // into a single combined result (see /api/analyze-merged in server.js),
+    // instead of looping and calling /api/analyze once per file.
+    const res = await fetch(`${BACKEND_URL}/api/analyze-merged`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        rfpText: extractedText,
+        documents: queue.map(pf => ({ filename: pf.file.name, text: pf.text })),
         strengths: strengthsEl.value.trim(),
         gaps: gapsEl.value.trim()
       })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Analysis failed.');
-    renderResults(data);
+
+    queue.forEach(pf => { pf.status = 'done'; });
+    const mergedName = queue.length > 1
+      ? `${queue.length} documents merged: ${queue.map(pf => pf.file.name).join(', ')}`
+      : queue[0].file.name;
+
+    const entry = saveHistoryEntry(mergedName, data, null);
+    currentBatchEntries = [entry];
+    renderResults(data, { fileName: mergedName, savedAt: entry.savedAt });
+    setActiveHistoryItem(entry.id);
+
   } catch (err) {
+    queue.forEach(pf => { pf.status = 'error'; pf.error = err.message; });
     renderEmpty();
-    showError('Gemini error', err.message);
-  } finally {
-    analyzeBtn.disabled = false;
-    analyzeBtn.textContent = '✨ Analyse RFP';
+    showError('Gemini error', err.message || 'Could not analyse these documents.');
   }
+
+  renderFileChips();
+  analyzeBtn.disabled = false;
+  updateAnalyzeBtnState();
 });
 
 function renderLoading(){
@@ -490,24 +739,71 @@ function renderEmpty(){
       <h2>No document analysed yet</h2>
       <p>Upload an RFP document and click "Analyse RFP" to extract deliverables, evaluation criteria, and a compliance checklist automatically.</p>
     </div>`;
+  currentBatchEntries = [];
+  currentSourceMeta = {};
+  setActiveHistoryItem(null);
 }
 
-const deptMeta = {
-  Legal:      { icon:'⚖️' },
-  Accounting: { icon:'💰' },
-  Technical:  { icon:'🛠️' },
-  Operations: { icon:'🗂️' },
-  Other:      { icon:'📌' }
-};
-const statusIcon = { met:'✓', gap:'✕', needs_review:'?' };
+// ---------------------------------------------------------------------
+// Main results renderer
+// ---------------------------------------------------------------------
+let currentSourceMeta = {};
 
-function renderResults(data){
+function renderResults(data, meta){
   lastResult = data;
+  meta = meta || {};
+  currentSourceMeta = meta;
+
+  // server.js already forces recommendation to 'NO-GO' when deadline_passed
+  // is true (see applyDeterministicChecks), but we still show an explicit
+  // banner here so a passed deadline is never just a color on a badge.
   const rec = (data.recommendation || 'CAUTION').toUpperCase();
   const recClass = rec === 'GO' ? 'go' : rec === 'NO-GO' ? 'nogo' : 'caution';
   const score = typeof data.fit_score === 'number' ? data.fit_score : '—';
 
   let html = '';
+
+  // Source strip — which uploaded RFP this result belongs to, so switching
+  // between multiple analysed documents (via history or the batch tabs
+  // below) is never ambiguous.
+  if (meta.fileName) {
+    html += `
+      <div class="source-strip">
+        <span class="ss-icon">📄</span>
+        <span class="ss-name">${escapeHtml(meta.fileName)}</span>
+        ${meta.savedAt ? `<span class="ss-date">${escapeHtml(fmtHistoryDate(meta.savedAt))}</span>` : ''}
+        ${meta.fromHistory ? `<span class="ss-tag">from history</span>` : ''}
+      </div>`;
+  }
+
+  // Batch tab strip — only shown when the most recent "Analyse" run
+  // processed more than one document, so the user can flip between the
+  // documents just analysed without hunting through the sidebar.
+  if (currentBatchEntries.length > 1) {
+    html += `<div class="batch-tabs">${currentBatchEntries.map(e => {
+      const eRec = (e.recommendation || 'CAUTION').toUpperCase();
+      const eCls = eRec === 'GO' ? 'go' : eRec === 'NO-GO' ? 'nogo' : 'caution';
+      return `
+      <button class="batch-tab ${eCls} ${e.id === activeHistoryId ? 'active' : ''}" data-batch-id="${e.id}">
+        <span class="bt-name">${escapeHtml(e.fileName)}</span>
+        <span class="bt-score">${typeof e.score === 'number' ? e.score : '—'}</span>
+      </button>`;
+    }).join('')}</div>`;
+  }
+
+  if (data.deadline_passed === true) {
+    html += `
+      <div class="deadline-banner">
+        <span class="dicon">⚠</span>
+        <span>Submission deadline (${escapeHtml(data.deadline_date_iso || 'unknown date')}) has already passed as of today. Confirm whether an addendum extended it before treating this RFP as active.</span>
+      </div>`;
+  } else if (data.deadline_passed === null || data.deadline_passed === undefined) {
+    html += `
+      <div class="deadline-banner unknown">
+        <span class="dicon">?</span>
+        <span>Could not confidently locate a submission deadline in this document — verify the due date manually.</span>
+      </div>`;
+  }
 
   html += `
     <div class="verdict-card ${recClass}">
@@ -529,42 +825,11 @@ function renderResults(data){
     </div>`;
   }
 
-  // Helper to render a checklist section as a table
-  function renderChecklistTable(title, icon, items) {
-    if (!Array.isArray(items) || !items.length) return '';
-    return `<div>
-      <h3 class="block-title">${icon} ${title}</h3>
-      <div class="cl-table-wrap">
-        <table class="cl-table">
-          <thead>
-            <tr>
-              <th>Checklist Item</th>
-              <th style="width:60px;text-align:center;">Yes/No</th>
-              <th style="width:90px;text-align:center;">Decision</th>
-              <th>Reason from RFP</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${items.map(item => {
-              const ans = (item.answer || '').toUpperCase();
-              const dec = (item.decision || '').toUpperCase();
-              const ansClass = ans === 'YES' ? 'ans-yes' : ans === 'NO' ? 'ans-no' : 'ans-na';
-              const decClass = dec === 'GO' ? 'dec-go' : dec === 'NO-GO' ? 'dec-nogo' : dec.includes('ESCALATE') ? 'dec-caution' : 'dec-review';
-              return `<tr>
-                <td>
-                  <div class="cl-item-name">${escapeHtml(item.item || '')}</div>
-                  <div class="cl-item-q">${escapeHtml(item.question || '')}</div>
-                </td>
-                <td style="text-align:center;"><span class="cl-ans ${ansClass}">${escapeHtml(item.answer || 'N/A')}</span></td>
-                <td style="text-align:center;"><span class="cl-dec ${decClass}">${escapeHtml(item.decision || '—')}</span></td>
-                <td class="cl-reason">${escapeHtml(item.reason || '—')}</td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>`;
-  }
+  // Parent/child deliverables — collapsible sections, RFP reference per child
+  html += renderDeliverablesSection(data.deliverables_checklist);
+
+  // Raw insurance figures extracted by the model, threshold math done server-side
+  html += renderInsuranceTable(data);
 
   html += renderChecklistTable('Financial / Accounting Checklist', '💰', data.financial_checklist);
   html += renderChecklistTable('Legal Checklist', '⚖️', data.legal_checklist);
@@ -590,14 +855,224 @@ function renderResults(data){
     btn.classList.add('saved');
     setTimeout(() => { btn.innerHTML = original; btn.classList.remove('saved'); }, 1800);
   });
+  resultsPanel.querySelectorAll('.batch-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const id = tab.dataset.batchId;
+      const entry = currentBatchEntries.find(e => e.id === id) || loadHistory().find(h => h.id === id);
+      if (!entry) return;
+      renderResults(entry.data, { fileName: entry.fileName, savedAt: entry.savedAt });
+      setActiveHistoryItem(id);
+    });
+  });
 }
 
+// ---------------------------------------------------------------------
+// Deliverables: PARENT (category) sections, each containing CHILD items.
+// Each child shows its own RFP reference ("§ ...") so the source of every
+// requirement is visible without opening a separate table column.
+// ---------------------------------------------------------------------
+function renderDeliverablesSection(categories) {
+  if (!Array.isArray(categories) || !categories.length) return '';
+
+  const totalItems = categories.reduce((sum, c) => sum + ((c.items || []).length), 0);
+
+  let html = `<div>
+    <h3 class="block-title">📦 Deliverables Required by RFP <span class="count">${totalItems} items across ${categories.length} sections</span></h3>`;
+
+  categories.forEach((cat, idx) => {
+    const items = cat.items || [];
+    html += `
+    <details class="deliv-category" ${idx === 0 ? 'open' : ''}>
+      <summary class="deliv-cat-header">
+        <span class="chev">▶</span>
+        <span class="deliv-cat-name">${escapeHtml(cat.category || 'Untitled section')}</span>
+        <span class="deliv-cat-count">${items.length} item${items.length === 1 ? '' : 's'}</span>
+        ${cat.due_date && cat.due_date !== 'N/A' ? `<span class="deliv-due">📅 ${escapeHtml(cat.due_date)}</span>` : ''}
+      </summary>
+      <div class="deliv-children">
+        ${items.map(item => renderDeliverableChild(item)).join('')}
+      </div>
+    </details>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+// ---------------------------------------------------------------------
+// Parses a "reason" string produced by the backend into its component
+// parts. The prompt requires the model to prefix every reason with
+// "Page N, Section X.Y: <explanation>" (see PAGE CITATION RULE in
+// server.js). This gives us page + section as separate badges instead of
+// dumping the whole citation as one undifferentiated sentence.
+// Falls back gracefully for older-format reasons that only have a
+// section (no page) or no structured prefix at all.
+// ---------------------------------------------------------------------
+function parseCitation(reason) {
+  const text = reason || 'Not explicitly stated in RFP — verify manually.';
+
+  // Full format: "Page 13, Section XI.B.2: rest of explanation"
+  let m = text.match(/^Page\s+([^,]+),\s*([^:]{1,50}):\s*(.*)$/i);
+  if (m) return { page: m[1].trim(), section: m[2].trim(), rest: m[3].trim() };
+
+  // Page only, no section label: "Page 13: rest"
+  m = text.match(/^Page\s+([^:]{1,20}):\s*(.*)$/i);
+  if (m) return { page: m[1].trim(), section: null, rest: m[2].trim() };
+
+  // Older/fallback format: "Section XI.B.2: rest" (no page)
+  m = text.match(/^([^:]{1,50}):\s*(.*)$/);
+  if (m) return { page: null, section: m[1].trim(), rest: m[2].trim() };
+
+  // No structured prefix at all — render as-is.
+  return { page: null, section: null, rest: text };
+}
+
+function renderCitationBadges(reason) {
+  const { page, section } = parseCitation(reason);
+  let badges = '';
+  if (page) badges += `<span class="cite-badge cite-page">📄 Page ${escapeHtml(page)}</span>`;
+  if (section) badges += `<span class="cite-badge cite-section">§ ${escapeHtml(section)}</span>`;
+  return badges;
+}
+
+// Shows which source document (filename) a finding came from, when multiple
+// RFP-related documents were merged into one analysis. Populated by the
+// backend's "source_document" field (see buildMergedPrompt in server.js).
+function renderDocBadge(sourceDoc) {
+  if (!sourceDoc) return '';
+  return `<span class="cite-badge cite-doc" title="${escapeHtml(sourceDoc)}">📁 ${escapeHtml(sourceDoc)}</span>`;
+}
+
+function renderDeliverableChild(item) {
+  const dec = (item.decision || '').toUpperCase();
+  const decClass = dec.includes('ACTION') ? 'dec-nogo' : dec === 'OPTIONAL' ? 'dec-review' : 'dec-go';
+  const mandClass = (item.mandatory || '').toUpperCase() === 'YES' ? 'ans-yes' : 'ans-na';
+
+  const { page, section, rest } = parseCitation(item.reason);
+  const badgesHtml = renderCitationBadges(item.reason) + renderDocBadge(item.source_document);
+
+  return `
+    <div class="deliv-child">
+      <div class="deliv-child-top">
+        <span class="deliv-child-title">${escapeHtml(item.item || '')}</span>
+        <span class="deliv-child-tags">
+          <span class="cl-ans ${mandClass}">${escapeHtml(item.mandatory || 'N/A')}</span>
+          <span class="cl-dec ${decClass}">${escapeHtml(item.decision || '—')}</span>
+        </span>
+      </div>
+      ${badgesHtml ? `<div class="deliv-child-badges">${badgesHtml}</div>` : ''}
+      <div class="deliv-child-ref">${escapeHtml(rest)}</div>
+    </div>`;
+}
+
+// ---------------------------------------------------------------------
+// Insurance figures extracted by the model — threshold comparison is done
+// server-side (applyDeterministicChecks in server.js), we only render it.
+// ---------------------------------------------------------------------
+function renderInsuranceTable(data){
+  if (!Array.isArray(data.insurance_figures) || !data.insurance_figures.length) return '';
+
+  const threshold = data.insurance_threshold_used;
+  const exceeds = data.insurance_exceeds_threshold;
+
+  let note = '';
+  if (typeof exceeds === 'boolean' && typeof threshold === 'number') {
+    note = exceeds
+      ? `<p class="insurance-note over">Highest APPLICABLE single coverage ($${(data.insurance_highest_single_coverage || 0).toLocaleString()}) exceeds your configured threshold ($${threshold.toLocaleString()}). Rows marked "Not applicable" below are excluded from this comparison.</p>`
+      : `<p class="insurance-note under">All applicable figures are within your configured threshold ($${threshold.toLocaleString()}). Rows marked "Not applicable" below (e.g. other risk tiers) are excluded from this comparison.</p>`;
+  }
+  if (data.insurance_tier_needs_review) {
+    note += `<p class="insurance-note" style="color:var(--caution);">⚠ Could not confidently determine which coverage tier applies from the RFP text — have this reviewed manually before relying on the threshold check.</p>`;
+  }
+
+  return `<div>
+    <h3 class="block-title">🛡️ Insurance Figures Extracted <span class="count">${data.insurance_figures.length}</span></h3>
+    ${note}
+    <div class="cl-table-wrap">
+      <table class="cl-table insurance-table">
+        <thead><tr>
+          <th>Coverage Type</th>
+          <th style="width:120px;text-align:right;">Amount</th>
+          <th style="width:170px;">Basis (as stated in RFP)</th>
+          <th style="width:150px;">Applies to This Contract?</th>
+        </tr></thead>
+        <tbody>
+          ${data.insurance_figures.map(f => {
+            const isStatutory = f.is_statutory === true;
+            const applies = f.applies_to_this_contract !== false;
+            const amt = Number(f.amount);
+            const hasAmount = !isNaN(amt) && amt > 0;
+            const cls = (threshold && applies && !isStatutory && hasAmount) ? (amt > threshold ? 'over' : 'under') : '';
+            const rowStyle = (!applies) ? 'opacity:0.5;' : '';
+            const amountDisplay = isStatutory ? 'Statutory' : (hasAmount ? `$${amt.toLocaleString()}` : '—');
+            const appliesTag = !applies
+              ? `<span class="cl-dec dec-review" title="${escapeHtml(f.tier_note || '')}">NOT APPLICABLE</span>`
+              : `<span class="cl-dec dec-go">APPLIES</span>`;
+            return `<tr style="${rowStyle}">
+              <td>${escapeHtml(f.coverage_type || '')}</td>
+              <td class="${cls}" style="text-align:right;">${amountDisplay}</td>
+              <td>${escapeHtml(f.basis || 'not specified')}</td>
+              <td>${appliesTag}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ---------------------------------------------------------------------
+// Flat checklist tables (Financial / Legal / Operations / Technical)
+// ---------------------------------------------------------------------
+function renderChecklistTable(title, icon, items) {
+  if (!Array.isArray(items) || !items.length) return '';
+  return `<div>
+    <h3 class="block-title">${icon} ${title}</h3>
+    <div class="cl-table-wrap">
+      <table class="cl-table">
+        <thead>
+          <tr>
+            <th>Checklist Item</th>
+            <th style="width:60px;text-align:center;">Yes/No</th>
+            <th style="width:90px;text-align:center;">Decision</th>
+            <th>Reason from RFP</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map(item => {
+            const ans = (item.answer || '').toUpperCase();
+            const dec = (item.decision || '').toUpperCase();
+            const ansClass = ans === 'YES' ? 'ans-yes' : ans === 'NO' ? 'ans-no' : 'ans-na';
+            const decClass = dec === 'GO' ? 'dec-go' : dec === 'NO-GO' ? 'dec-nogo' : dec.includes('ESCALATE') ? 'dec-caution' : 'dec-review';
+            return `<tr>
+              <td>
+                <div class="cl-item-name">${escapeHtml(item.item || '')}</div>
+                <div class="cl-item-q">${escapeHtml(item.question || '')}</div>
+              </td>
+              <td style="text-align:center;"><span class="cl-ans ${ansClass}">${escapeHtml(item.answer || 'N/A')}</span></td>
+              <td style="text-align:center;"><span class="cl-dec ${decClass}">${escapeHtml(item.decision || '—')}</span></td>
+              <td class="cl-reason">
+                <div class="deliv-child-badges" style="margin-bottom:4px;">${renderCitationBadges(item.reason)}${renderDocBadge(item.source_document)}</div>
+                ${escapeHtml(parseCitation(item.reason).rest)}
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ---------------------------------------------------------------------
+// Save checklist to a standalone HTML file (mirrors the live rendering,
+// including the parent/child deliverable sections and insurance table)
+// ---------------------------------------------------------------------
 function saveChecklistToFile(){
   if (!lastResult) return;
-  const html = buildChecklistHtml(lastResult, currentFile ? currentFile.name : 'RFP Document');
+  const html = buildChecklistHtml(lastResult, currentSourceMeta.fileName || 'RFP Document');
   const blob = new Blob([html], { type: 'text/html' });
   const url = URL.createObjectURL(blob);
-  const baseName = (currentFile ? currentFile.name.replace(/\.[^.]+$/, '') : 'rfp-analysis');
+  const baseName = (currentSourceMeta.fileName ? currentSourceMeta.fileName.replace(/\.[^.]+$/, '') : 'rfp-analysis');
   const stamp = new Date().toISOString().slice(0,10);
   const a = document.createElement('a');
   a.href = url;
@@ -613,6 +1088,96 @@ function buildChecklistHtml(data, sourceName){
   const recColor = rec === 'GO' ? '#1f9d6b' : rec === 'NO-GO' ? '#d6453d' : '#b8860b';
   const score = typeof data.fit_score === 'number' ? data.fit_score : '—';
   const today = new Date().toLocaleDateString(undefined, { year:'numeric', month:'long', day:'numeric' });
+
+  const deadlineBannerHtml = data.deadline_passed === true
+    ? `<div style="background:#fdecea;border:1px solid #f3c1bd;border-radius:8px;padding:12px 16px;margin-bottom:16px;color:#c0392b;font-size:13px;font-weight:600;">⚠ Submission deadline (${escapeHtml(data.deadline_date_iso || 'unknown date')}) has already passed as of the generation date below. Confirm whether an addendum extended it.</div>`
+    : (data.deadline_passed === null || data.deadline_passed === undefined)
+      ? `<div style="background:#fff8e6;border:1px solid #f0d98c;border-radius:8px;padding:12px 16px;margin-bottom:16px;color:#8a6d1a;font-size:13px;font-weight:600;">? Could not confidently locate a submission deadline — verify manually.</div>`
+      : '';
+
+  // ---- Parent/child deliverables as nested sections (static HTML export) ----
+  function buildDeliverablesTwoLevel(categories) {
+    if (!Array.isArray(categories) || !categories.length) return '';
+    const totalItems = categories.reduce((sum, c) => sum + ((c.items || []).length), 0);
+    let out = `<h2>📦 Deliverables Required by RFP <span style="font-weight:400;color:#999;font-size:11px;">(${totalItems} items across ${categories.length} sections)</span></h2>`;
+    categories.forEach(cat => {
+      const items = cat.items || [];
+      out += `
+      <div style="border:1px solid #d0d9f0;border-radius:8px;margin-bottom:14px;overflow:hidden;">
+        <div style="background:#f0f4ff;padding:11px 16px;display:flex;align-items:center;gap:10px;">
+          <span style="font-weight:700;font-size:13.5px;color:#1a1a2e;">${escapeHtml(cat.category || '')}</span>
+          <span style="font-family:monospace;font-size:10.5px;color:#35b8c9;background:#35b8c91f;padding:1px 8px;border-radius:9px;">${items.length} item${items.length === 1 ? '' : 's'}</span>
+          ${cat.due_date && cat.due_date !== 'N/A' ? `<span style="margin-left:auto;font-size:11px;color:#666;font-family:monospace;">📅 ${escapeHtml(cat.due_date)}</span>` : ''}
+        </div>
+        <div style="padding:10px 16px 14px;">
+          ${items.map(item => {
+            const dec = (item.decision || '').toUpperCase();
+            const decColor = dec.includes('ACTION') ? '#d6453d' : dec === 'OPTIONAL' ? '#888' : '#1f9d6b';
+            const mandColor = (item.mandatory || '').toUpperCase() === 'YES' ? '#1f9d6b' : '#888';
+            const { page, section, rest } = parseCitation(item.reason);
+            const badgesHtml = [
+              page ? `<span style="font-family:monospace;font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:#f2b54426;color:#b8860b;">📄 Page ${escapeHtml(page)}</span>` : '',
+              section ? `<span style="font-family:monospace;font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:#35b8c926;color:#35b8c9;">§ ${escapeHtml(section)}</span>` : '',
+              item.source_document ? `<span style="font-family:monospace;font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:#b28cff26;color:#8a5fe0;">📁 ${escapeHtml(item.source_document)}</span>` : ''
+            ].filter(Boolean).join(' ');
+            return `
+            <div style="background:#fafbfe;border:1px solid #e6eaf5;border-radius:7px;padding:10px 12px;margin-top:8px;">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:5px;">
+                <span style="font-size:12.5px;font-weight:600;color:#1a1a2e;">${escapeHtml(item.item || '')}</span>
+                <span style="flex-shrink:0;display:flex;gap:6px;">
+                  <span style="font-family:monospace;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:${mandColor}1A;color:${mandColor};">${escapeHtml(item.mandatory || 'N/A')}</span>
+                  <span style="font-family:monospace;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:${decColor}1A;color:${decColor};">${escapeHtml(item.decision || '—')}</span>
+                </span>
+              </div>
+              ${badgesHtml ? `<div style="margin-bottom:4px;display:flex;gap:6px;flex-wrap:wrap;">${badgesHtml}</div>` : ''}
+              <div style="font-size:11.5px;color:#666;line-height:1.5;">${escapeHtml(rest)}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    });
+    return out;
+  }
+
+  function buildInsuranceTableHtml(data){
+    if (!Array.isArray(data.insurance_figures) || !data.insurance_figures.length) return '';
+    const threshold = data.insurance_threshold_used;
+    const exceeds = data.insurance_exceeds_threshold;
+    let note = (typeof exceeds === 'boolean' && typeof threshold === 'number')
+      ? `<p style="font-size:12.5px;margin-bottom:6px;color:${exceeds ? '#d6453d' : '#1f9d6b'};">${exceeds
+          ? `Highest APPLICABLE single coverage ($${(data.insurance_highest_single_coverage || 0).toLocaleString()}) exceeds your configured threshold ($${threshold.toLocaleString()}). Rows marked "Not applicable" are excluded from this comparison.`
+          : `All applicable figures are within your configured threshold ($${threshold.toLocaleString()}). Rows marked "Not applicable" are excluded from this comparison.`}</p>`
+      : '';
+    if (data.insurance_tier_needs_review) {
+      note += `<p style="font-size:12.5px;margin-bottom:10px;color:#b8860b;">⚠ Could not confidently determine which coverage tier applies from the RFP text — review manually.</p>`;
+    }
+    return `
+      <h2>🛡️ Insurance Figures Extracted</h2>
+      ${note}
+      <table class="cl-table">
+        <thead><tr><th>Coverage Type</th><th>Amount</th><th>Basis</th><th>Applies?</th></tr></thead>
+        <tbody>
+          ${data.insurance_figures.map(f => {
+            const isStatutory = f.is_statutory === true;
+            const applies = f.applies_to_this_contract !== false;
+            const amt = Number(f.amount);
+            const hasAmount = !isNaN(amt) && amt > 0;
+            const color = (applies && !isStatutory && hasAmount && threshold && amt > threshold) ? '#d6453d' : '#1f9d6b';
+            const amountDisplay = isStatutory ? 'Statutory' : (hasAmount ? `$${amt.toLocaleString()}` : '—');
+            const rowOpacity = applies ? '1' : '0.5';
+            const appliesTag = applies
+              ? `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:#1f9d6b1A;color:#1f9d6b;">APPLIES</span>`
+              : `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:#8881A;color:#888;" title="${escapeHtml(f.tier_note || '')}">NOT APPLICABLE</span>`;
+            return `<tr style="opacity:${rowOpacity};">
+              <td><strong>${escapeHtml(f.coverage_type || '')}</strong></td>
+              <td style="color:${color};font-weight:700;">${amountDisplay}</td>
+              <td style="color:#555;font-size:12px;">${escapeHtml(f.basis || 'not specified')}</td>
+              <td>${appliesTag}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`;
+  }
 
   function buildSectionTable(title, icon, items) {
     if (!Array.isArray(items) || !items.length) return '';
@@ -632,12 +1197,21 @@ function buildChecklistHtml(data, sourceName){
           const dec = (item.decision || '').toUpperCase();
           const ansColor = ans === 'YES' ? '#1f9d6b' : ans === 'NO' ? '#d6453d' : '#888';
           const decColor = dec === 'GO' ? '#1f9d6b' : dec === 'NO-GO' ? '#d6453d' : dec.includes('ESCALATE') ? '#b8860b' : '#888';
+          const { page, section, rest } = parseCitation(item.reason);
+          const badgesHtml = [
+            page ? `<span style="font-family:monospace;font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:#f2b54426;color:#b8860b;">📄 Page ${escapeHtml(page)}</span>` : '',
+            section ? `<span style="font-family:monospace;font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:#35b8c926;color:#35b8c9;">§ ${escapeHtml(section)}</span>` : '',
+            item.source_document ? `<span style="font-family:monospace;font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:#b28cff26;color:#8a5fe0;">📁 ${escapeHtml(item.source_document)}</span>` : ''
+          ].filter(Boolean).join(' ');
           return `<tr>
             <td><strong>${escapeHtml(item.item || '')}</strong></td>
             <td style="color:#555;font-size:12px;">${escapeHtml(item.question || '')}</td>
             <td style="text-align:center;font-weight:700;color:${ansColor};">${escapeHtml(item.answer || 'N/A')}</td>
             <td style="text-align:center;"><span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:${decColor}1A;color:${decColor};">${escapeHtml(item.decision || '—')}</span></td>
-            <td style="color:#555;font-size:12px;">${escapeHtml(item.reason || '—')}</td>
+            <td style="color:#555;font-size:12px;">
+              ${badgesHtml ? `<div style="margin-bottom:4px;display:flex;gap:6px;flex-wrap:wrap;">${badgesHtml}</div>` : ''}
+              ${escapeHtml(rest)}
+            </td>
           </tr>`;
         }).join('')}
       </tbody>
@@ -675,6 +1249,8 @@ function buildChecklistHtml(data, sourceName){
   <h1>RFP Compliance Checklist</h1>
   <div class="meta">Source: ${escapeHtml(sourceName)} &nbsp;·&nbsp; Generated ${today}</div>
 
+  ${deadlineBannerHtml}
+
   <div class="verdict">
     <div class="score">${score}<small>FIT SCORE</small></div>
     <div>
@@ -684,14 +1260,223 @@ function buildChecklistHtml(data, sourceName){
   </div>
 
   ${disqHtml}
+  ${buildDeliverablesTwoLevel(data.deliverables_checklist)}
+  ${buildInsuranceTableHtml(data)}
   ${buildSectionTable('Financial / Accounting Checklist', '💰', data.financial_checklist)}
   ${buildSectionTable('Legal Checklist', '⚖️', data.legal_checklist)}
   ${buildSectionTable('Operations Checklist', '🗂️', data.operations_checklist)}
   ${buildSectionTable('Technical Checklist', '🛠️', data.technical_checklist)}
 
-  <div class="footer-note">Generated by RFP Intelligence Portal · Gemini 2.5 Flash · Verify all terms against the original RFP before submission.</div>
+  <div class="footer-note">Generated by RFP Intelligence Portal · Gemini 3.5 Flash · Verify all terms against the original RFP before submission.</div>
 </body></html>`;
 }
+
+// ---------------------------------------------------------------------
+// HISTORY SIDEBAR — purely additive UI feature. Stores completed
+// analyses (the same `data` object returned by /api/analyze) in
+// localStorage and lets the user re-open any past result through the
+// existing renderResults() renderer. Does not touch extraction/analysis
+// logic or any deterministic checks performed by the backend.
+// ---------------------------------------------------------------------
+const HISTORY_KEY = 'rfp_intel_history_v1';
+const HISTORY_LIMIT = 30;
+let activeHistoryId = null;
+
+function loadHistory(){
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    const list = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list) ? list : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function persistHistory(list){
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+  } catch (e) {
+    // storage full or unavailable — fail silently, feature is non-critical
+  }
+}
+
+// Pulls a quick-glance summary out of an already-computed analysis result:
+// which deliverable sections it covers, and which RFP page numbers were
+// cited across all checklists. Purely derived from data already produced
+// by the backend (via the same parseCitation() used to render badges) —
+// no new extraction or analysis logic.
+function summarizeAnalysisForHistory(data){
+  const categories = [];
+  (data.deliverables_checklist || []).forEach(c => {
+    if (c.category && !categories.includes(c.category)) categories.push(c.category);
+  });
+
+  const pages = [];
+  const collectPages = (items) => {
+    (items || []).forEach(it => {
+      const { page } = parseCitation(it.reason);
+      if (page && !pages.includes(page)) pages.push(page);
+    });
+  };
+  (data.deliverables_checklist || []).forEach(c => collectPages(c.items));
+  collectPages(data.financial_checklist);
+  collectPages(data.legal_checklist);
+  collectPages(data.operations_checklist);
+  collectPages(data.technical_checklist);
+
+  pages.sort((a, b) => {
+    const na = parseInt(a, 10), nb = parseInt(b, 10);
+    if (!isNaN(na) && !isNaN(nb)) return na - nb;
+    return String(a).localeCompare(String(b));
+  });
+
+  const deliverableCount = (data.deliverables_checklist || []).reduce((sum, c) => sum + ((c.items || []).length), 0);
+  const checklistCount = ['financial_checklist','legal_checklist','operations_checklist','technical_checklist']
+    .reduce((sum, key) => sum + (Array.isArray(data[key]) ? data[key].length : 0), 0);
+
+  return { categories, pages, deliverableCount, checklistCount };
+}
+
+function saveHistoryEntry(fileName, data, batchId){
+  const list = loadHistory();
+  const summary = summarizeAnalysisForHistory(data);
+  const entry = {
+    id: 'h_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+    batchId: batchId || null,
+    fileName: fileName || 'Untitled RFP',
+    savedAt: new Date().toISOString(),
+    score: typeof data.fit_score === 'number' ? data.fit_score : null,
+    recommendation: (data.recommendation || 'CAUTION').toUpperCase(),
+    categories: summary.categories,
+    pages: summary.pages,
+    deliverableCount: summary.deliverableCount,
+    checklistCount: summary.checklistCount,
+    data
+  };
+  list.unshift(entry);
+  if (list.length > HISTORY_LIMIT) list.length = HISTORY_LIMIT;
+  persistHistory(list);
+  activeHistoryId = entry.id;
+  renderHistorySidebar();
+  return entry;
+}
+
+function removeHistoryEntry(id){
+  const list = loadHistory().filter(h => h.id !== id);
+  persistHistory(list);
+  if (activeHistoryId === id) activeHistoryId = null;
+  renderHistorySidebar();
+}
+
+function clearHistory(){
+  persistHistory([]);
+  activeHistoryId = null;
+  renderHistorySidebar();
+}
+
+function setActiveHistoryItem(id){
+  activeHistoryId = id;
+  document.querySelectorAll('.history-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.id === id);
+  });
+}
+
+function fmtHistoryDate(iso){
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined, { month:'short', day:'numeric' }) + ' · ' +
+           d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
+  } catch (e) { return ''; }
+}
+
+function renderHistorySidebar(){
+  const list = loadHistory();
+  const holder = document.getElementById('historyListHolder');
+  const countEl = document.getElementById('historyCount');
+  countEl.textContent = String(list.length);
+
+  if (!list.length){
+    holder.innerHTML = `
+      <div class="history-empty">
+        <div class="g">🗂️</div>
+        <p>Nothing analysed yet.<br>Completed analyses will be indexed here.</p>
+      </div>`;
+    return;
+  }
+
+  const itemsHtml = list.map((h, i) => {
+    const rec = (h.recommendation || 'CAUTION').toUpperCase();
+    const recClass = rec === 'GO' ? 'go' : rec === 'NO-GO' ? 'nogo' : 'caution';
+    const idx = String(list.length - i).padStart(3, '0');
+
+    const categories = h.categories || [];
+    const catShort = categories.slice(0, 2).join(' · ');
+    const catMore = categories.length > 2 ? ` +${categories.length - 2}` : '';
+
+    const pages = h.pages || [];
+    const pageShort = pages.slice(0, 5).join(', ');
+    const pageMore = pages.length > 5 ? '…' : '';
+
+    return `
+      <li class="history-item ${recClass} ${h.id === activeHistoryId ? 'active' : ''}" data-id="${h.id}">
+        <button class="h-remove" data-remove="${h.id}" title="Remove from history">✕</button>
+        <div class="h-top">
+          <span class="h-idx">CASE-${idx}</span>
+          <span class="h-score">${typeof h.score === 'number' ? h.score : '—'}</span>
+        </div>
+        <div class="h-name" title="${escapeHtml(h.fileName)}">${escapeHtml(h.fileName)}</div>
+        <div class="h-date">${fmtHistoryDate(h.savedAt)}${typeof h.deliverableCount === 'number' && h.deliverableCount ? ` · ${h.deliverableCount} deliverables` : ''}</div>
+        ${categories.length ? `<div class="h-cats" title="${escapeHtml(categories.join(', '))}">📦 ${escapeHtml(catShort)}${catMore}</div>` : ''}
+        ${pages.length ? `<div class="h-pages" title="Pages cited: ${escapeHtml(pages.join(', '))}">📄 p. ${escapeHtml(pageShort)}${pageMore}</div>` : ''}
+      </li>`;
+  }).join('');
+
+  holder.innerHTML = `
+    <ul class="history-list">${itemsHtml}</ul>
+    <button class="history-clear" id="historyClearBtn">clear all history</button>`;
+
+  holder.querySelectorAll('.history-item').forEach(el => {
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('[data-remove]')) return;
+      const id = el.dataset.id;
+      const entry = loadHistory().find(h => h.id === id);
+      if (!entry) return;
+      // Restore the sibling tab strip if this document was analysed as
+      // part of a multi-file batch, so switching between them still works.
+      currentBatchEntries = entry.batchId
+        ? loadHistory().filter(h => h.batchId === entry.batchId).reverse()
+        : [entry];
+      renderResults(entry.data, { fileName: entry.fileName, savedAt: entry.savedAt, fromHistory: true });
+      setActiveHistoryItem(id);
+      closeHistorySidebarOnMobile();
+    });
+  });
+  holder.querySelectorAll('[data-remove]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeHistoryEntry(btn.dataset.remove);
+    });
+  });
+  const clearBtn = document.getElementById('historyClearBtn');
+  if (clearBtn) clearBtn.addEventListener('click', clearHistory);
+}
+
+// mobile history drawer toggle
+const historySidebarEl = document.getElementById('historySidebar');
+const historyBackdropEl = document.getElementById('historyBackdrop');
+const historyToggleEl = document.getElementById('historyToggle');
+function openHistorySidebarOnMobile(){
+  historySidebarEl.classList.add('open');
+  historyBackdropEl.classList.add('open');
+}
+function closeHistorySidebarOnMobile(){
+  historySidebarEl.classList.remove('open');
+  historyBackdropEl.classList.remove('open');
+}
+historyToggleEl.addEventListener('click', openHistorySidebarOnMobile);
+historyBackdropEl.addEventListener('click', closeHistorySidebarOnMobile);
+
+renderHistorySidebar();
 </script>
 
 </body>
